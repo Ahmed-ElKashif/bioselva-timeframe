@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Selva Platform — Phase 1 Timeframe (Paymob Integration)</title>
+<style>
+  :root {
+    --bg: #f7f6f3;
+    --surface: #ffffff;
+    --surface-alt: #f2f1ee;
+    --border: rgba(0,0,0,0.09);
+    --border-strong: rgba(0,0,0,0.15);
+    --text-primary: #111110;
+    --text-secondary: #6b6a66;
+    --text-muted: #999896;
+    --radius: 8px;
+
+    --ahmed:   #185FA5;
+    --ahmed-bg:#E6F1FB;
+    --ahmed-text:#042C53;
+    --amr-be:  #993C1D;
+    --amr-be-bg:#FAECE7;
+    --amr-be-text:#4A1B0C;
+    --amr-mob: #3B6D11;
+    --amr-mob-bg:#EAF3DE;
+    --amr-mob-text:#173404;
+    --dem-ad:  #0F6E56;
+    --dem-ad-bg:#E1F5EE;
+    --dem-ad-text:#04342C;
+    --dem-mob: #1D6FA8;
+    --dem-mob-bg:#ddf0ff;
+    --dem-mob-text:#083455;
+    --ux:      #BA7517;
+    --ux-bg:   #FAEEDA;
+    --ux-text: #412402;
+    --qa:      #533AB7;
+    --qa-bg:   #EEEDFE;
+    --qa-text: #26215C;
+    --ms:      #1D6E56;
+    --ms-bg:   #e8f8f3;
+    --ms-text: #0a3d2e;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  /* ── Layout ── */
+  .page { max-width: 1400px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+  /* ── Header ── */
+  .page-header { margin-bottom: 2rem; }
+  .page-header h1 { font-size: 22px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+  .page-header p  { font-size: 13px; color: var(--text-secondary); }
+  .meta-row { display: flex; gap: 20px; margin-top: 10px; flex-wrap: wrap; }
+  .meta-chip { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-secondary);
+    background: var(--surface); border: 0.5px solid var(--border-strong); border-radius: 20px; padding: 3px 10px; }
+  .meta-chip strong { color: var(--text-primary); }
+
+  /* ── Legend ── */
+  .legend { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1.5rem; }
+  .leg { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 500; color: var(--text-secondary);
+    background: var(--surface); border: 0.5px solid var(--border-strong); border-radius: 20px; padding: 3px 10px; }
+  .leg-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ── Week filter tabs ── */
+  .week-tabs { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 1.25rem; }
+  .wtab { font-size: 11px; font-weight: 500; padding: 5px 12px; border-radius: 20px;
+    border: 0.5px solid var(--border-strong); cursor: pointer; background: var(--surface);
+    color: var(--text-secondary); transition: all .13s; white-space: nowrap; }
+  .wtab:hover { border-color: var(--ahmed); color: var(--ahmed); }
+  .wtab.active { background: var(--ahmed); color: #fff; border-color: var(--ahmed); }
+
+  /* ── Member filter ── */
+  .member-tabs { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 1.5rem; }
+  .mtab { font-size: 11px; font-weight: 500; padding: 4px 11px; border-radius: 20px;
+    border: 0.5px solid var(--border-strong); cursor: pointer; background: var(--surface);
+    color: var(--text-secondary); transition: all .13s; }
+  .mtab:hover { background: var(--surface-alt); }
+  .mtab.active { background: var(--text-primary); color: #fff; border-color: var(--text-primary); }
+
+  /* ── Week section ── */
+  .week-section { display: none; margin-bottom: 2rem; }
+  .week-section.visible { display: block; }
+
+  .week-header {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--surface); border: 0.5px solid var(--border-strong);
+    border-radius: var(--radius) var(--radius) 0 0;
+    padding: .75rem 1rem; border-bottom: 2px solid var(--ahmed);
+    flex-wrap: wrap; gap: 8px;
+  }
+  .week-label { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+  .week-dates { font-size: 12px; color: var(--text-secondary); }
+  .week-theme { font-size: 12px; font-weight: 500; color: var(--text-secondary); font-style: italic; }
+  .milestone-chip {
+    font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px;
+    background: var(--ms-bg); color: var(--ms-text); border: 0.5px solid var(--ms);
+  }
+
+  /* ── Day grid ── */
+  .day-grid {
+    background: var(--surface); border: 0.5px solid var(--border-strong);
+    border-top: none; border-radius: 0 0 var(--radius) var(--radius);
+    overflow-x: auto;
+  }
+  table { width: 100%; border-collapse: collapse; min-width: 700px; }
+  th {
+    font-size: 11px; font-weight: 600; color: var(--text-secondary);
+    padding: 8px 10px; text-align: left; text-transform: uppercase; letter-spacing: .04em;
+    background: var(--surface-alt); border-bottom: 0.5px solid var(--border-strong);
+    white-space: nowrap;
+  }
+  th:first-child { width: 90px; position: sticky; left: 0; z-index: 2; border-right: 0.5px solid var(--border-strong); }
+  td { padding: 0; border-bottom: 0.5px solid var(--border); vertical-align: top; }
+  td:first-child {
+    padding: 8px 10px; font-size: 11px; font-weight: 700; color: var(--text-secondary);
+    text-transform: uppercase; letter-spacing: .05em; position: sticky; left: 0;
+    background: var(--surface-alt); border-right: 0.5px solid var(--border-strong);
+    white-space: nowrap; vertical-align: middle;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #fafaf8; }
+  tr:hover td:first-child { background: var(--surface-alt); }
+
+  .task-cell { padding: 6px 8px; }
+  .task-pill {
+    border-radius: 6px; padding: 6px 8px; font-size: 11px; line-height: 1.5;
+    min-height: 52px; display: flex; flex-direction: column; gap: 3px;
+  }
+  .pill-tag {
+    display: inline-block; font-size: 9px; font-weight: 700; letter-spacing: .04em;
+    text-transform: uppercase; border-radius: 3px; padding: 1px 5px; width: fit-content;
+  }
+  .pill-text { font-size: 11px; line-height: 1.45; }
+
+  /* ── Deliverables ── */
+  .deliverables {
+    margin-top: .5rem; background: var(--surface);
+    border: 0.5px solid var(--border-strong); border-radius: var(--radius); padding: .875rem 1rem;
+  }
+  .del-heading { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+    color: var(--text-secondary); margin-bottom: .5rem; }
+  .del-list { display: flex; flex-wrap: wrap; gap: 6px; }
+  .del-item {
+    display: flex; align-items: flex-start; gap: 6px; font-size: 12px; color: var(--text-primary);
+    background: #f0faf5; border: 0.5px solid #b0dfc7; border-radius: 6px;
+    padding: 4px 9px; line-height: 1.4;
+  }
+  .del-check { color: #1D9E75; font-size: 11px; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── Progress bar ── */
+  .progress-section { margin-bottom: 1.5rem; }
+  .progress-label { font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; }
+  .progress-track { height: 4px; background: var(--surface-alt); border-radius: 2px; overflow: hidden;
+    border: 0.5px solid var(--border); }
+  .progress-fill { height: 100%; border-radius: 2px; background: var(--ahmed); transition: width .3s; }
+
+  /* ── Milestone timeline ── */
+  .milestone-timeline { background: var(--surface); border: 0.5px solid var(--border-strong);
+    border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: 2rem; }
+  .ms-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+    color: var(--text-secondary); margin-bottom: .875rem; }
+  .ms-row { display: flex; gap: 0; overflow-x: auto; padding-bottom: 4px; }
+  .ms-item { display: flex; flex-direction: column; align-items: center; min-width: 120px; flex: 1; }
+  .ms-line { width: 100%; height: 3px; background: var(--surface-alt); border: 0.5px solid var(--border);
+    border-radius: 2px; position: relative; margin: 10px 0 6px; }
+  .ms-dot { width: 16px; height: 16px; border-radius: 50%; border: 2.5px solid var(--ahmed);
+    background: var(--surface); position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); }
+  .ms-dot.done { background: var(--ahmed); }
+  .ms-wk { font-size: 10px; font-weight: 700; color: var(--text-muted); text-align: center; }
+  .ms-label { font-size: 10px; color: var(--text-secondary); text-align: center; line-height: 1.3; max-width: 110px; }
+  .ms-date { font-size: 9px; color: var(--text-muted); text-align: center; margin-top: 2px; }
+
+  /* ── Role color classes ── */
+  .c-ahmed   { background: var(--ahmed-bg); border: 0.5px solid var(--ahmed); }
+  .c-ahmed .pill-tag { background: var(--ahmed); color: #fff; }
+  .c-ahmed .pill-text { color: var(--ahmed-text); }
+
+  .c-amr-be  { background: var(--amr-be-bg); border: 0.5px solid var(--amr-be); }
+  .c-amr-be .pill-tag { background: var(--amr-be); color: #fff; }
+  .c-amr-be .pill-text { color: var(--amr-be-text); }
+
+  .c-amr-mob { background: var(--amr-mob-bg); border: 0.5px solid var(--amr-mob); }
+  .c-amr-mob .pill-tag { background: var(--amr-mob); color: #fff; }
+  .c-amr-mob .pill-text { color: var(--amr-mob-text); }
+
+  .c-dem-ad  { background: var(--dem-ad-bg); border: 0.5px solid var(--dem-ad); }
+  .c-dem-ad .pill-tag { background: var(--dem-ad); color: #fff; }
+  .c-dem-ad .pill-text { color: var(--dem-ad-text); }
+
+  .c-dem-mob { background: var(--dem-mob-bg); border: 0.5px solid var(--dem-mob); }
+  .c-dem-mob .pill-tag { background: var(--dem-mob); color: #fff; }
+  .c-dem-mob .pill-text { color: var(--dem-mob-text); }
+
+  .c-ux      { background: var(--ux-bg); border: 0.5px solid var(--ux); }
+  .c-ux .pill-tag { background: var(--ux); color: #fff; }
+  .c-ux .pill-text { color: var(--ux-text); }
+
+  .c-qa      { background: var(--qa-bg); border: 0.5px solid var(--qa); }
+  .c-qa .pill-tag { background: var(--qa); color: #fff; }
+  .c-qa .pill-text { color: var(--qa-text); }
+
+  @media (max-width: 600px) {
+    .page { padding: 1rem; }
+    .page-header h1 { font-size: 18px; }
+  }
+  @media print {
+    .week-tabs, .member-tabs { display: none; }
+    .week-section { display: block !important; }
+    body { background: white; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="page-header">
+    <h1>Selva Platform — Phase 1 Timeframe</h1>
+    <p>Day-by-day plan for all 5 team members across 10 weeks</p>
+    <div class="meta-row">
+      <div class="meta-chip"><strong>Start</strong> Mon 13 Jul 2026</div>
+      <div class="meta-chip"><strong>End</strong> Thu 17 Sep 2026</div>
+      <div class="meta-chip"><strong>Work days</strong> Sun – Thu</div>
+      <div class="meta-chip"><strong>Team</strong> Ahmed · Amr · Demerdash · Salma · Hanaa</div>
+      <div class="meta-chip"><strong>Stack</strong> Node/Express · React (Vite) · React Native/Expo · Prisma/PostgreSQL</div>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div class="legend">
+    <div class="leg"><div class="leg-dot" style="background:var(--ahmed)"></div>Ahmed — Backend</div>
+    <div class="leg"><div class="leg-dot" style="background:var(--amr-be)"></div>Amr — DevOps / Backend</div>
+    <div class="leg"><div class="leg-dot" style="background:var(--amr-mob)"></div>Amr — User Mobile App</div>
+    <div class="leg"><div class="leg-dot" style="background:var(--dem-ad)"></div>Demerdash — Admin Dashboard</div>
+    <div class="leg"><div class="leg-dot" style="background:var(--dem-mob)"></div>Demerdash — Mobile (W7+)</div>
+    <div class="leg"><div class="leg-dot" style="background:var(--ux)"></div>Salma + Hanaa — UX / Design</div>
+    <div class="leg"><div class="leg-dot" style="background:var(--qa)"></div>QA / UAT / Shared</div>
+  </div>
+
+  <!-- Milestone timeline -->
+  <div class="milestone-timeline">
+    <div class="ms-title">Milestones</div>
+    <div class="ms-row" id="msRow"></div>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-section">
+    <div class="progress-label" id="progressLabel">Showing: All 10 weeks</div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:100%"></div></div>
+  </div>
+
+  <!-- Week tabs -->
+  <div class="week-tabs">
+    <button class="wtab active" onclick="showWeeks('all',this)">All weeks</button>
+    <button class="wtab" onclick="showWeeks(1,this)">W1 — Foundation</button>
+    <button class="wtab" onclick="showWeeks(2,this)">W2 — Admin Core</button>
+    <button class="wtab" onclick="showWeeks(3,this)">W3 — Products + CMS</button>
+    <button class="wtab" onclick="showWeeks(4,this)">W4 — Tower Import</button>
+    <button class="wtab" onclick="showWeeks(5,this)">W5 — Orders + Auth</button>
+    <button class="wtab" onclick="showWeeks(6,this)">W6 — Services</button>
+    <button class="wtab" onclick="showWeeks(7,this)">W7 — Admin DONE</button>
+    <button class="wtab" onclick="showWeeks(8,this)">W8 — Care + Builds</button>
+    <button class="wtab" onclick="showWeeks(9,this)">W9 — QA + Submission</button>
+    <button class="wtab" onclick="showWeeks(10,this)">W10 — UAT + Launch</button>
+  </div>
+
+  <!-- Member filter -->
+  <div class="member-tabs">
+    <button class="mtab active" onclick="filterMember('all',this)">All members</button>
+    <button class="mtab" onclick="filterMember('Ahmed',this)">Ahmed</button>
+    <button class="mtab" onclick="filterMember('Amr',this)">Amr</button>
+    <button class="mtab" onclick="filterMember('Demerdash',this)">Demerdash</button>
+    <button class="mtab" onclick="filterMember('Salma',this)">Salma</button>
+    <button class="mtab" onclick="filterMember('Hanaa',this)">Hanaa</button>
+  </div>
+
+  <!-- Week sections injected by JS -->
+  <div id="weeksContainer"></div>
+
+</div>
+
+<script>
+const WEEKS = [
+  {
+    n:1, label:'Week 1 — Foundation', dates:'Mon 13 Jul – Thu 16 Jul (4 days)', theme:'Repos · DevOps · DB Schema · Scaffolds · Design System',
+    milestone:'M1 — Foundation complete · Thu 16 Jul',
+    days:[
+      { label:'Mon 13', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Init selva-backend-api: Node+TS+Express, strict tsconfig, eslint, prettier. Project structure + feature-based folders.'},
+        Amr:     {c:'c-amr-be', tag:'DevOps',   text:'Create GitHub Org. Create 5 repos (backend, admin-dashboard, user-app, shared, distributor-placeholder). Invite all 5 + tech lead. Branch protection on main/develop. PR template + CONTRIBUTING.md.'},
+        Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'Init selva-admin-dashboard: Vite+React+TS. Install Tailwind+RTL plugin, RTK+RTK Query, RHF+Zod, Router v6, react-i18next. Tailwind green tokens (#2D6A4F). Inter font.'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'Figma: shared team file, 3 pages (Design System / Admin / User App). Spacing scale (4px grid), border-radius system.'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'Reference audit: Linear, Vercel, Shopify Admin — document UI patterns to adopt + avoid for our design language.'},
+      }},
+      { label:'Tue 14', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Write full Prisma schema: 39 tables, 41 enums, all Gate 3 entities + 7 adjustments (ADJ-01 through ADJ-10). See DB_SCHEMA.md.'},
+        Amr:     {c:'c-amr-be', tag:'DevOps',   text:'Create Supabase dev project: Auth config (email+pw for admin), 5 Storage buckets (payment-evidence, complaint-attachments, import-files, product-images, cms-images). Create Supabase staging mirror.'},
+        Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'i18n: src/app/i18n.ts, locales/ar/common.json, locales/en/common.json. RTK store: authSlice, uiSlice (language+RTL), notificationsSlice, fetchBaseQueryWithAuth.'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'Color tokens: primary green palette, neutrals, semantic colors (success/warning/error/info). Figma variables layer.'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'Icon library selection: Heroicons or Lucide — pick one, create icon component spec. Status Badge/Chip variants (all order + complaint statuses).'},
+      }},
+      { label:'Wed 15', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Run prisma migrate dev. Write seed: 1 Super Admin, 1 Manager Admin, 1 Admin, 2 customers (1 with 2 towers in/out-warranty, 1 no towers), 3 products+variants, 1 import batch. Write docs/DB_SCHEMA.md.'},
+        Amr:     {c:'c-amr-be', tag:'DevOps',   text:'Dockerfile for backend (multi-stage). docker-compose.yml for local dev (backend + PostgreSQL). Test full local stack end-to-end: schema + seed + server.'},
+        Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'Feature folder scaffold: 18 feature dirs each with components/, hooks/, pages/, api/, store/, types/. AdminLayout: Sidebar (19 nav links, RTL-aware, collapse/expand) + Topbar (lang toggle, bell icon, user menu).'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'Typography: Inter scale (display/heading/body/caption), Cairo fallback for Arabic, RTL line-height specs. Type scale exported as Figma text styles.'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'DataTable component design: column headers, rows, pagination, filter bar, empty state illustration, skeleton loader. This is the core admin UI pattern.'},
+      }},
+      { label:'Thu 16', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Shared middleware: errorHandler (Gate 4 error format), requestLogger, rateLimiter, CORS. Shared utils: phoneNormalization.ts, auditLogger.ts, fileValidation.ts, pagination.ts. Write docs/ARCHITECTURE.md (stack decisions, folder structure, service boundaries), docs/RULES.md (coding rules: no business logic in controllers, always use service layer, always call AuditService on writes, never read warranty_status from DB), docs/SKILLS.md (how to use Cursor with these memory files). These are the Cursor AI memory files governing all backend development.'},
+        Amr:     {c:'c-amr-be', tag:'DevOps',   text:'GitHub Actions CI: lint → typecheck → test → build on every PR. CD: auto-deploy to GCP Cloud Run staging on develop merge, production on main merge. .env.example + Zod env validation at startup.'},
+        Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'React Router v6: all 19 admin routes registered + AdminRoute guard (JWT check → redirect /admin/login if no token). Write docs/ADMIN_ARCHITECTURE.md (admin-specific: RTK store structure, feature folder conventions, i18n key naming rules, RTL class naming, component pattern for DataTable + slide-over + modal).'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'Base components: Button (5 variants: primary/secondary/ghost/danger/link), Input, Textarea, Select, Checkbox, Toggle, Modal shell. Exported as Figma component library.'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'Admin Login page: centered form, logo, email+password fields, error states, RTL mirror. Dashboard page: 11 widget card layouts with correct label text.'},
+      }},
+    ],
+    deliverables:[
+      'GitHub Org + 5 repos + CI/CD pipeline live (lint→build→deploy)',
+      'Supabase dev + staging environments ready (Auth + Storage)',
+      'Full Prisma schema (39 tables, 41 enums) migrated with seed data',
+      'Admin dashboard scaffolded: Tailwind, RTK, i18n, all 19 routes',
+      'Figma design system: colors, typography, base components started',
+      'Ahmed writes: docs/ARCHITECTURE.md + docs/RULES.md + docs/SKILLS.md (backend Cursor memory files) + docs/DB_SCHEMA.md',
+      'Demerdash writes: docs/ADMIN_ARCHITECTURE.md (admin RTK + i18n + component conventions)',
+    ]
+  },
+  {
+    n:2, label:'Week 2 — Admin Core + Public Marketplace Backend', dates:'Sun 20 Jul – Thu 24 Jul', theme:'Admin Login · Dashboard · Customers · Public APIs',
+    milestone:'M2 — Admin Core complete · Thu 24 Jul',
+    days:[
+      { label:'Sun 20', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Admin auth: POST /api/v1/admin/auth/login, POST /auth/refresh, POST /auth/logout, GET /admin/me. JWT signing + admin session handling.'},
+        Amr:     {c:'c-amr-be', tag:'Backend',  text:'Public APIs: GET /public/homepage, /public/cms/:slug, /public/banners, /public/faqs, /public/partners, /public/partners/:id, /public/partners/:id/locations.'},
+        Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'features/auth: LoginPage with RHF+Zod form, RTK authSlice update on success, redirect to dashboard. Error handling (wrong credentials, account suspended).'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'Admin Dashboard page: 11 widget cards with correct metric labels, activity feed, quick actions panel. RTL variant of full layout.'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'User App: Marketplace Homepage — hero banner carousel, featured ProductCards, category grid, partners preview strip, locked SelvaCareTease, locked AssistantTeaser, GuestAvatar in header.'},
+      }},
+      { label:'Mon 21', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Dashboard aggregate service: 11 real metrics (pending payments, open complaints, upcoming bookings, available slots, recent imports, location changes, partner requests, warranty top-ups, spare parts, new registrations, new orders).'},
+        Amr:     {c:'c-amr-be', tag:'Backend',  text:'Shop APIs: GET /shop/categories, /shop/products (filters: category, type, price, status, guest-visible), /shop/products/:id, /shop/products/:id/variants.'},
+        Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'features/dashboard: 11 metric widget cards + activity feed + loading skeleton on initial load + 30-second auto-refetch via RTK Query keepUnusedDataFor.'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'Admin: Customer List page — 8-filter bar (name, phone, email, ownership, country, reg date, account status, tower count), DataTable with pagination.'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'User App: Shop Listing — ProductCard grid, category filter sidebar, search bar, offer banner slots. Mobile-first layout.'},
+      }},
+      { label:'Tue 22', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'GET /admin/customers — paginated, 8 filters. CustomerService with all filter combinations. Cursor-based or offset pagination.'},
+        Amr:     {c:'c-amr-be', tag:'Backend',  text:'GET /admin/notifications (paginated). GET /admin/customers/:id (full profile). GET /admin/customers/:id/towers (linked towers list).'},
+        Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'features/customers: CustomerListPage — DataTable with 8 filter inputs, paginated rows, row click navigates to detail. RTK Query hook with filter params.'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'Admin: Customer Detail — 7-tab layout (Profile / Towers / Orders / Complaints / Maintenance / Transactions / Audit). Tab content specs for each. Note: the Evidence tab renamed to Transactions — shows Paymob transaction history.'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'User App: Product Detail — image gallery (swipe), variants selector (size/color/plants), price + availability, Add to Cart CTA, related products strip.'},
+      }},
+      { label:'Wed 23', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Customer detail auxiliaries: GET /admin/customers/:id/orders, /complaints, /maintenance, /payment-evidence. All paginated, all ownership-scoped.'},
+        Amr:     {c:'c-amr-be', tag:'Backend',  text:'GET /admin/dashboard endpoint wired to DashboardService aggregate. Verify all 11 metrics return real counts from Prisma seed data.'},
+        Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'CustomerDetailPage: 7-tab layout, separate RTK Query per tab (lazy load on tab click), loading skeleton per tab, empty state per tab.'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'User App: Partners directory — partner cards grid, PartnerDetailPage layout, location map embed placeholder, contact info section.'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'User App: Partner Request form — become distributor/partner, applicant fields, country/city selects, message textarea. Guest-accessible.'},
+      }},
+      { label:'Thu 24', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Admin auth middleware: requireAdminAuth — validate JWT, attach adminUser to req, return 401 on invalid/expired. Applied to all /admin/* routes.'},
+        Amr:     {c:'c-amr-be', tag:'Backend',  text:'GET /admin/users — basic admin user listing (for Role Manager in Week 7). Wire notification badge endpoint.'},
+        Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'Polish: Dashboard empty states (no pending items), notification bell badge (unread count), language toggle tested in both ar/en. Fix any layout bugs.'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'Deliver Admin Dashboard + Customer screens to Demerdash (Figma link + handoff notes). Confirm all specs clear.'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'Deliver User App Marketplace + Shop designs to Amr (ready for Week 4 build). Start User App Cart page design.'},
+      }},
+    ],
+    deliverables:[
+      'Admin login + dashboard (11 real metrics) + customer list + customer detail all working',
+      'Public marketplace APIs ready: homepage, shop, partners, CMS, FAQs',
+      'Figma: Admin Dashboard + Customer screens delivered',
+      'Figma: User App Homepage + Shop designs delivered (Amr Week 4 prep)',
+    ]
+  },
+  {
+    n:3, label:'Week 3 — Admin Products + CMS · Guest Cart + Auth Backend', dates:'Sun 27 Jul – Thu 31 Jul', theme:'Products · CMS · File Upload · Auth · Staging Deploy',
+    milestone:'M3 — Products + CMS + Staging live · Thu 31 Jul',
+    days:[
+      { label:'Sun 27', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Products CRUD: GET/POST /admin/products, PATCH /admin/products/:id, DELETE. Categories CRUD. Variants: POST /admin/products/:id/variants, PATCH /admin/products/:id/variants/:variantId.'},
+        Amr:     {c:'c-amr-be', tag:'Backend',  text:'Guest session: POST /api/v1/guest/session (create, return token), GET /guest/session/:id (validate), POST /guest/session/:id/expire.'},
+        Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'features/products: ProductListPage — DataTable + filters (category, type, status, guest-visible, tower-required). Create/Edit product slide-over panel with RHF+Zod.'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'User App: Cart page — line items list, qty stepper (+/-), remove button, subtotal, total, guest checkout prompt ("Sign in to continue"). RTL layout.'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'User App: Registration screen — phone, email, password, full name, country, city. Zod field validations shown inline. Progress indicator.'},
+      }},
+      { label:'Mon 28', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'File presign: POST /api/v1/files/presign — validate purpose (5 allowed: payment-evidence, complaint-attachment, import-file, product-image, cms-image) → return Supabase Storage signed upload URL. StorageService.ts shared service.'},
+        Amr:     {c:'c-amr-be', tag:'Backend',  text:'Cart APIs: GET /cart (resolves guest session or auth token), POST /cart/items, PATCH /cart/items/:itemId (qty update), DELETE /cart/items/:itemId, POST /cart/merge (guest→user on login).'},
+        Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'Product Detail (slide-over): Variants management sub-table (add/edit/disable variants). Image upload: presigned URL → Supabase Storage → update variant.image_url. CategoriesPage (list, create, edit, parent/child tree).'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'User App: Login screen + Onboarding screen (phone capture → preview-match call → show match/no-match → customer type selector → continue to registration).'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'User App: Checkout flow — 3 steps: (1) Cart summary + edit, (2) Contact + delivery + payment method selector (card / wallet / BNPL), (3) Paymob payment sheet launch screen (design the loading state, success screen, failed screen with retry CTA). Note: Paymob SDK handles the actual payment UI.'},
+      }},
+      { label:'Tue 29', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'CMS: GET/POST /admin/cms-content (filter by type, language, status), PATCH /admin/cms-content/:id (update), POST /admin/cms-content/:id/publish (draft→published), POST .../archive.'},
+        Amr:     {c:'c-amr-be', tag:'Backend',  text:'Auth: POST /auth/register (normalize phone → check tower_import_rows match → link towers if matched → merge guest cart → return user + permissions). POST /auth/login, /logout, /refresh.'},
+        Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'features/cms: CMSContentPage — filter by content_type (7 types), create/edit body text, language field (ar/en), lifecycle status badges (Draft→Published→Archived). Publish + archive actions.'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'User App: Account page + Profile edit form (name, phone, email, country, city, address, language preference).'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'User App: Order Detail page + Payment status screen — 3 Paymob states: payment_pending (spinner), payment_succeeded (green confirmed + order details), payment_failed (red badge + Retry Payment CTA). No evidence upload or approval states needed.'},
+      }},
+      { label:'Wed 30', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'POST /auth/onboarding/preview-match (phone → returns match/no-match ONLY — no details disclosed). POST /me/onboarding/complete, GET /me/onboarding/status. GET /me, PATCH /me/profile, GET /me/permissions, GET /me/ownership-status.'},
+        Amr:     {c:'c-amr-be', tag:'DevOps',   text:'Deploy backend to GCP Cloud Run STAGING (develop branch). Deploy admin dashboard to staging URL. Smoke test all Week 2–3 endpoints on staging with real data.'},
+        Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'Deploy backend to GCP Cloud Run staging. Deploy admin dashboard to staging URL. Smoke test: login → dashboard → customers → products → CMS all working on staging.'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'User App: Selva Care locked state (guest teaser card: "Sign in to manage your towers" + Shop CTA). RTL variant.'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'User App: Selva Care empty state (registered, no towers: illustration + "Browse shop" CTA). Selva Care full state (tower owner: tower grid entry point).'},
+      }},
+      { label:'Thu 31', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Write features/products/README.md, features/cms/README.md, features/auth/README.md. Zod validation schemas for all new endpoints.'},
+        Amr:     {c:'c-amr-be', tag:'Backend',  text:'Test presigned URL flow end-to-end: upload real product image to Supabase Storage → URL stored on variant. Test guest cart → login → cart merge: items carry over correctly, no duplicates.'},
+        Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'Polish admin Products + CMS: empty states, form validation error messages, loading skeletons on all data tables. Update docs/PROJECT_MEMORY.md with W3 status.'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'Deliver User App Cart + Auth + Checkout designs to Amr (ready for Week 5 build).'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'Deliver User App Account + Care (locked/empty/full) designs to Amr (ready for Week 6 build).'},
+      }},
+    ],
+    deliverables:[
+      'Admin Products + Categories + CMS Content (with file upload) complete',
+      'Guest session + cart APIs + auth APIs (register/login/onboarding/phone match)',
+      'Staging environment live: backend + admin dashboard deployed',
+      'Figma: User App Cart + Auth + Checkout + Account + Care designs delivered',
+    ]
+  },
+  {
+    n:4, label:'Week 4 — Tower Import Engine · User App Public Screens', dates:'Sun 2 Aug – Thu 6 Aug', theme:'Import Engine · Phone Normalization · User App scaffold + Marketplace',
+    milestone:'M4 — Tower Import + User App started · Thu 6 Aug',
+    days:[
+      { label:'Sun 2', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Import engine start: parse CSV + Excel (papaparse + xlsx). Validate mandatory columns (Gate 5.2): phone, customer_name, purchase_date, tower_model, tower_size, tower_color, plants_per_tower, installation_status, location, batch_reference, invoice_reference. Serial optional.'},
+        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'Init selva-user-app: React Native + Expo + TS. Install Expo Router, RTK+RTK Query (same patterns as admin), react-i18next, NativeWind. Feature-based folder structure. Bottom tab nav (Home/Shop/Partners/Care/Profile). RTK store + i18n.'},
+        Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'features/tower-imports: TowerImportsPage — file dropzone (CSV/Excel), upload to Supabase import-files bucket via presigned URL, import progress tracker (status polling).'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'User App: Tower Detail page — all fields: model, size, color, plants, purchase date, batch ref, invoice ref, serial, installation status, location (editable), warranty badge, maintenance tab, complaints tab.'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'User App: Maintenance slot picker design + Booking detail page design (status, tower, slot details, reschedule CTA, cancel CTA).'},
+      }},
+      { label:'Mon 3', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Phone normalization: 01001234567 / 00201001234567 / +201001234567 → all normalize to +201001234567. Store raw_customer_phone_number + normalized_phone_number in tower_import_rows. Reuse phoneNormalization.ts util.'},
+        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'features/marketplace: MarketplaceHomePage — hero banner carousel (RTK Query getHomepage + getBanners), featured ProductCards, category grid, partners preview strip, locked SelvaCareTease card, locked AssistantTeaser, GuestAvatar in header.'},
+        Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'ImportValidationTable component: color-coded rows (accepted=green, rejected=red, duplicate=yellow), per-row error tooltip, inline row correction form for rejected rows. Confirm import action + preview summary before commit.'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'User App: Complaints form design — category picker (7 fixed categories), tower selector, order selector, description textarea, file attachment button. Complaint detail + status timeline.'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'User App: Spare Parts request design — tower selector, warranty check gate screen ("In warranty — use Maintenance"), compatible parts multi-select list, submit button.'},
+      }},
+      { label:'Tue 4', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Duplicate detection: flag rows where normalized_phone + invoice_reference + batch_reference combination already exists in tower_import_rows or towers table. Set row_status = duplicate.'},
+        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'features/shop: ShopListingPage (ProductCard grid, category filter chips, search input, RTK Query getProducts). ProductDetailPage (image gallery swipe, variants selector: size/color/plants, price, availability, Add to Cart CTA, related products).'},
+        Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'Post-import results card: 8 metrics (total / accepted / rejected / duplicate / towers_created / towers_linked / unmatched). Import audit log entry created automatically. Retry failed import option.'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'User App: Warranty Top-Up request design — user_reason textarea, maintenance_commitment_notes, submit. Status screen: requested / under_review / approved (extension date) / rejected (reason).'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'User App: Selva Assistant widget — floating button, chat bubble UI (user=right, assistant=left), typing indicator, tower selector dropdown for user-specific mode. 3 mode states: guest teaser, general, full.'},
+      }},
+      { label:'Wed 5', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Tower creation: validated rows → create towers records (warranty_start_date = purchase_date, warranty_end_date = purchase_date + 365 days). Create tower_import_rows records with created_tower_id.'},
+        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'features/partners: PartnersPage (partner cards, type badge partner/distributor, location info). PartnerDetailPage (profile, locations list, contact). PartnerRequestForm (become partner/distributor — guest-accessible).'},
+        Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'features/towers: TowerListPage — 10 filters (tower_code, batch_ref, serial_ref, invoice_ref, customer_phone, owner_name, warranty_status, installation_status, source_channel, city). Paginated DataTable.'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'User App: Installation status change request screen design — current status display, new status selector, notes field, submission confirmation. Also: tower location update flow (map picker modal, confirmation screen).'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'User App: Notifications screen design — notification list with type icons, unread badge, mark-as-read swipe action, mark-all-read button, filter by type.'},
+      }},
+      { label:'Thu 6', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Auto-link service: match normalized_phone_number from tower_import_rows → users.normalized_phone_number → create user_towers records → user becomes Tower Owner (linked_method = phone_import_match). Unmatched rows stored for future registration. Tower admin APIs: GET/PATCH /admin/towers, link/unlink user, installation status, warranty-override (Super Admin only).'},
+        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'features/cart: CartPage (line items list, qty stepper, remove, cart total, currency). CartDrawer (slide-up sheet from shop/product). Guest checkout → AuthPromptModal (prompt to register/login). RTK cart slice with guest cart + API sync.'},
+        Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'TowerDetailPage: 8 sections — tower profile / commercial data (batch/invoice/serial) / ownership (owner name, linked method, linked date) / installation / warranty (calculated) / maintenance history / complaints / location history. Link/Unlink user actions.'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'DESIGN PHASE COMPLETE for User App. Deliver Warranty + Complaints + Spare Parts designs to Amr/Demerdash.'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'DESIGN PHASE COMPLETE for User App. Deliver Assistant + Weather + Notifications designs. All 27 User App screens delivered by end of Week 4.'},
+      }},
+    ],
+    deliverables:[
+      'Import engine: validate + normalize phones + deduplicate + create towers + auto-link users',
+      'Tower List (10 filters) + Tower Detail (8 sections) — admin complete',
+      'User App: Marketplace homepage + Shop + Partners + Cart scaffolded (Amr)',
+      'ALL remaining User App Figma designs delivered — design phase complete',
+    ]
+  },
+  {
+    n:5, label:'Week 5 — Admin Orders + Paymob Integration + Partners · User App Auth', dates:'Sun 9 Aug – Thu 13 Aug', theme:'Paymob Integration · Orders · Partners · User Registration + Auth flow',
+    milestone:'M5 — Paymob live + PRODUCTION deploy · Thu 13 Aug',
+    days:[
+      { label:'Sun 9', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Paymob setup: npm install paymob-node. Create PaymobService.ts — initialize with Secret Key (skl_***): const paymob = Paymob(env.PAYMOB_SECRET_KEY). Base URL: https://accept.paymob.com (Egypt). Implement createPaymentIntention(order): calls paymob.Intention.create({ amount in piastres (100 EGP = 10000), currency: EGP, payment_methods: ["card","wallets","card-installment"], items, billing_data, customer }) → returns { client_secret, id }. No auth token step needed — Secret Key authenticates directly. Schema: rename payment_evidence → payment_transactions (add intention_id, paymob_transaction_id, payment_method, webhook_snapshot JSONB). Run migration. Orders: GET /admin/orders, PATCH /admin/orders/:id/status.'},
+        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'features/auth: OnboardingScreen — welcome message, phone input, normalize + POST /auth/onboarding/preview-match API call (show "We found your tower!" or "No towers found — you can add later"), customer type selector (Egypt / International), continue CTA.'},
+        Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'features/orders: OrderListPage — DataTable with status/date/payment_method/customer filters (replace payment_path with payment_method: card/wallet/bnpl). OrderDetailPage — items list, totals, contact info, Paymob transaction ID, payment status badge (succeeded/failed/pending), refund action button.'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'W5 design support: answer open User App design questions from Amr\'s Week 4 handoff (assistant widget edge cases, spare parts UI, weather widget). Review built screens vs Figma — flag deviations.'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'W5 design support: review all 27 User App screens built so far against Figma. Document gaps between design and implementation. Prepare QA checklist for Week 9.'},
+      }},
+      { label:'Mon 10', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Paymob webhook: POST /api/v1/webhooks/paymob — Paymob sends HMAC-signed callback after every transaction. Verify: HMAC-SHA512 of the concatenated fields using PAYMOB_HMAC_SECRET. If valid: update payment_transactions row (paymob_transaction_id, status, payment_method). Update order status: success=true → payment_succeeded, success=false → payment_failed. Trigger NotificationService. Admin APIs: GET /admin/payment-transactions (filter by status/method/date). POST /admin/payment-transactions/:id/refund → paymob.Intention.refund(). Add PAYMOB_SECRET_KEY (skl_***) + PAYMOB_PUBLIC_KEY + PAYMOB_HMAC_SECRET to Zod env schema.'},
+        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'features/auth: RegisterScreen (RHF+Zod: phone, email, password, full_name, country, city, customer_type → POST /auth/register → backend normalizes phone → links towers if match → merges guest cart → redirect). LoginScreen (email+password → POST /auth/login → authSlice update → fetch permissions).'},
+        Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'features/payment-transactions: PaymentTransactionsPage — DataTable (filter by status/method/date), transaction detail slide-over (Paymob transaction ID, amount, currency, payment method badge, webhook snapshot JSON viewer). Refund button → confirm modal → POST /admin/payment-transactions/:id/refund. No manual approve/reject — Paymob handles this automatically via webhook.'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'Admin dashboard design QA: Order Detail page + Payment Transactions page vs Figma. Update Figma to reflect Paymob transaction viewer (no approve/reject buttons, only refund button). Note any missing states (empty state, failed transaction display, refund confirmation modal).'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'Admin dashboard design QA: Partners page + Partner Requests page vs Figma. Document all RTL layout issues found in Arabic mode.'},
+      }},
+      { label:'Tue 11', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'User checkout API: POST /api/v1/orders/checkout → creates order (status: payment_pending) → calls paymob.Intention.create() → returns { orderId, client_secret, paymob_public_key } to mobile. Mobile uses client_secret + public_key to launch Paymob React Native SDK checkout sheet. GET /api/v1/orders/:id/payment-status → returns { status, paymob_transaction_id }. Partners: GET/POST /admin/partners, PATCH /admin/partners/:id. Partner locations CRUD + partner requests lifecycle.'},
+        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'features/auth: RTK authSlice update — store user profile + tower ownership status (Tower Owner / No Towers) + permission flags from GET /me/permissions. Redirect logic after login (return to cart/checkout/previous screen based on navigation history).'},
+        Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'features/partners: PartnersPage — directory DataTable, Create/Edit partner slide-over (type, profile, contact, status). PartnerRequestsPage — requests queue with lifecycle status actions (Under Review → Contacted → Approved/Rejected).'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'Prepare full Arabic RTL design verification checklist for Week 9 QA: every screen, every component, every form — ar vs en toggle expected behavior documented.'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'Create empty state illustration assets (SVG) for User App: no-orders, no-towers, no-complaints, no-notifications, no-bookings. Export to Figma + hand off to Amr/Demerdash.'},
+      }},
+      { label:'Wed 12', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Notification triggers: wire NotificationService to Paymob webhook events — payment_succeeded → user notification (order confirmed) + admin alert, payment_failed → user notification (retry prompt). Remove evidence-based triggers (no longer needed). Public partner APIs: GET /public/partners, POST /public/partner-requests. Add PAYMOB_SECRET_KEY + PAYMOB_PUBLIC_KEY + PAYMOB_CARD_INTEGRATION_ID + PAYMOB_WALLET_INTEGRATION_ID to env.ts Zod schema.'},
+        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'features/auth: GuestAwareRoute — detect guest session on app open (auto-create guest session if no token exists). GuestAvatar component (tap → login/register prompt). AuthPromptModal: appears on checkout or locked feature tap.'},
+        Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'Polish admin Orders + Payment Transactions + Partners: empty states, loading states, error toasts on API failure (including Paymob refund failure toast). RTL verified on all 3 new pages. Arabic translation keys added for all new strings including Paymob payment method labels (card/wallet/bnpl) in Arabic.'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'Finalize app icon design: 1024×1024 iOS + Android adaptive icon. Splash screen design. Export assets ready for Week 9 submission.'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'App Store screenshots design: 6.7-inch iPhone + 6.1-inch iPhone + Android. Create screenshot frames with device mockups for all key screens (marketplace, care, tower detail).'},
+      }},
+      { label:'Thu 13', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Deploy backend to GCP Cloud Run PRODUCTION. Run Prisma migrations on production Supabase. Smoke test all endpoints on production environment with real admin credentials.'},
+        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'Test full auth flow end-to-end: guest → browse shop → add to cart → tap checkout → AuthPromptModal → register with phone (matches imported tower) → towers auto-linked → redirect to checkout → guest cart merged. Fix any bugs.'},
+        Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'Deploy admin dashboard to PRODUCTION (Vercel or GCP). Production smoke test: login → dashboard → all 11 admin pages load correctly with real data. Write PROJECT_MEMORY.md update.'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'Design QA W8: review WarrantyScreen + WarrantyTopUpScreen + WarrantyTopUpStatusScreen (user side) vs Figma. Verify in-warranty vs out-of-warranty badge visual states, approved extension date display.'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'Design QA W8: review SparePartDetailScreen + SparePartsListScreen (user side) vs Figma. Verify admin decision display (approved/rejected/converted_to_order) matches design.'},
+      }},
+    ],
+    deliverables:[
+      'Paymob Intentions API live — paymob.Intention.create() + HMAC-SHA512 webhook verified + MCP connected in Cursor',
+      'Admin: Orders + Payment Transactions (replace Evidence) + Partners complete',
+      'User App: Onboarding + Registration + Login + Guest cart merge flow working',
+      'Backend + Admin Dashboard deployed to PRODUCTION',
+      'Notification triggers: payment_succeeded/payment_failed webhook events wired',
+      'Paymob MCP connected in Cursor Pro (https://mcp.paymob.com/mcp) — team can debug transactions without leaving editor',
+    ]
+  },
+  {
+    n:6, label:'Week 6 — Admin Service Workflows · User App Checkout + Account', dates:'Sun 16 Aug – Thu 20 Aug', theme:'Maintenance · Complaints · Warranty · Spare Parts · Audit · Notifications',
+    milestone:'M6 — Service Workflows + Commerce complete · Thu 20 Aug',
+    days:[
+      { label:'Sun 16', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Maintenance: POST /admin/maintenance/slots (date, start_time, end_time, city, coverage_area, capacity, assigned_personnel), PATCH /admin/maintenance/slots/:id, GET /admin/maintenance/bookings (filter by status/city/date), PATCH /admin/maintenance/bookings/:id/status. GET /care/maintenance/slots (public — tower owner, filter by tower city). POST/PATCH/CANCEL booking endpoints.'},
+        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'features/checkout: CheckoutStepper 3 steps: (1) Cart summary + edit items, (2) Contact + delivery info + payment method selector (card / wallets / card-installment), (3) Paymob React Native SDK — call POST /orders/checkout → receive { client_secret, paymob_public_key } → pass to Paymob SDK PaymentWidget({ client_secret, public_key }) → SDK opens native payment sheet, handles 3DS, OTP, wallet PIN → webhook fires on backend → order status auto-updates. CheckoutSuccessPage (poll GET /orders/:id/payment-status) + CheckoutFailedPage (retry CTA).'},
+        Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'features/maintenance: MaintenancePage — 2 tabs: (1) Slots tab (create slot form + slots DataTable with status badge, capacity bar), (2) Bookings tab (booking queue, status update actions). MaintenanceCalendar component: week view, slot capacity indicators.'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'Design support W6: review CheckoutStepper 3-step UI vs Figma (cart summary / payment method selector / Paymob checkout launch). Update Figma checkout screens to reflect Paymob SDK flow replacing evidence upload step. Flag layout issues to Amr.'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'Design support W6: review Maintenance slot picker + BookMaintenanceScreen built by Amr vs Figma spec. Verify slot capacity indicator display and RTL layout.'},
+      }},
+      { label:'Mon 17', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Complaints: GET /admin/complaints (filter: status, category, assigned_admin_id), PATCH .../assign (assign to admin user), POST .../resolve (resolution_notes required), POST .../reject (rejection_reason required), POST .../close. POST /care/complaints, GET /care/complaints (user own), POST /care/complaints/:id/attachments.'},
+        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'CheckoutSuccessPage (order number, estimated next steps). features/account: AccountProfilePage — view + edit (name, phone, email, country, city, address, language preference). RTK authSlice profile update on save.'},
+        Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'features/complaints: ComplaintsPage — ComplaintWorkflowPanel: queue list (filter by status/category/assigned), assign dropdown (admin users list), 6-state status stepper, notes textarea (required on resolve/reject), complaint_attachments viewer.'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'Design support W6: review AccountProfilePage + CheckoutSuccessPage vs Figma. Verify all form field states (focus, error, disabled) match design.'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'Design support W6: review ComplaintsWorkflowPanel 6-state stepper in admin vs Figma. Verify all state transitions visually correct and RTL-safe.'},
+      }},
+      { label:'Tue 18', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Warranty: GET /admin/warranty/topup-requests, POST .../approve (requires approved_extension_until date), POST .../reject (reason required). Spare Parts: GET /admin/spare-part-requests, POST .../approve, POST .../reject, POST .../convert-to-order (creates order from request items).'},
+        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'features/account: OrdersListPage (user orders with payment status badges: pending/succeeded/failed, paginated). OrderDetailPage (items, totals, contact info, Paymob payment status badge, transaction ID). If payment_failed: "Retry Payment" button → re-open Paymob SDK. Order cancel request button.'},
+        Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'features/warranty: WarrantyTopUpPage — request queue, tower preview (model/purchase_date/warranty_end), approve → date picker (approved_extension_until), reject → reason modal. features/spare-parts: SparePartsPage — request queue, tower + compatible parts info, 3 actions: approve / reject / convert-to-order. Payment transactions page polish: refund modal with Paymob refund reason field + amount confirmation.'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'Design support W6: review OrdersListPage + OrderDetailPage (user side) vs Figma. Check payment status screen — all 3 Paymob states (payment_pending/payment_succeeded/payment_failed) match design. Verify retry payment CTA visible on failed state.'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'Design support W6: review WarrantyTopUpPage + SparePartsPage (admin) vs Figma. Verify approve modal date picker and reject modal reason field designs.'},
+      }},
+      { label:'Wed 19', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Wire AuditService.log() to ALL critical admin write operations: imports, tower changes (location/status/link/unlink), Paymob webhook-triggered order status updates, admin refund actions, complaint lifecycle, warranty decisions, spare parts decisions, CMS publish/archive, partner changes. Every write op gets an audit_logs row.'},
+        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'features/account: OrderDetailPage — show Paymob payment status badge (payment_pending/payment_succeeded/payment_failed). If payment_failed: show "Retry Payment" button → re-open Paymob SDK with same client_secret or create new intention. Order cancel request. features/notifications: NotificationsScreen (list, mark as read, unread badge on Profile tab).'},
+        Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'features/notifications: Admin NotificationsPage (list by type, mark read, mark all read). features/audit-logs: AuditLogsPage — AuditLogTimeline (filter by actor/entity/action/date range, old_values → new_values diff view per row).'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'Design support W6: review NotificationsScreen (user + admin) vs Figma. Verify unread badge, mark-as-read interaction, and RTL notification list layout.'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'Design support W6: review AuditLogTimeline vs Figma. Verify old→new diff view presentation and timeline visual design. Deliver final design QA report for W6 screens.'},
+      }},
+      { label:'Thu 20', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Wire NotificationService to ALL remaining Gate 4.4 trigger events: maintenance booking created/rescheduled/cancelled (user + admin), complaint submitted/status changed, warranty top-up submitted/approved/rejected, spare parts request submitted, tower location changed (admin alert), import batch completed.'},
+        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'Navigation guards: AuthRoute (requires login → redirect to onboarding), TowerOwnerRoute (requires linked tower → show locked/empty state). FeatureLockedWrapper component (shows locked teaser instead of hard error). Test guard behavior for all 4 user states.'},
+        Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'Polish ALL service workflow pages: loading states, empty states, error toasts. RTL verified on Maintenance calendar + Complaints 6-state stepper + Warranty date picker + Spare Parts page. Arabic translations for all new strings.'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'Design support W6: review navigation guard states — FeatureLockedWrapper, Auth prompt modal, empty state (no towers), locked care state — all 4 match Figma across Guest/No-Towers/Tower Owner states.'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'Design support W6: final polish review — compile full design QA report for all W5–W6 screens. Prioritized bug list for Ahmed/Amr/Demerdash to address before W9 QA pass.'},
+      }},
+    ],
+    deliverables:[
+      'Admin: Maintenance + Complaints + Warranty + Spare Parts + Notifications + Audit Logs complete',
+      'User App: Full Paymob checkout flow (card + wallet + BNPL via React Native SDK) + Account + Orders + Notifications + Navigation guards',
+      'Notification system wired to all 16 trigger events (Gate 4.4)',
+      'AuditService active on all critical write operations',
+    ]
+  },
+  {
+    n:7, label:'Week 7 — Admin Role Manager → ADMIN DONE · User App Care Screens', dates:'Sun 23 Aug – Thu 27 Aug', theme:'3-tier Role Manager · Permission Grid · SelvaCarePage · Tower Detail · FCM Push',
+    milestone:'M7 — Admin Dashboard 100% COMPLETE · Thu 27 Aug',
+    days:[
+      { label:'Sun 23', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Role-permission system: seed admin_roles (super_admin, manager_admin, admin), admin_permissions (19 modules × read+write = 38 rows), admin_role_permissions (defaults per tier). PermissionService.can(adminUser, module, action) → boolean. Resolution order: (1) super_admin → true, (2) check admin_permission_overrides, (3) check admin_role_permissions, (4) deny.'},
+        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'features/care: SelvaCarePage — 3 states controlled by RTK authSlice permission flags: (1) Locked/teaser (FeatureLockedCard: "Sign in to manage your towers" + login CTA), (2) Empty state (registered, no towers: illustration + "No towers yet" + Shop CTA), (3) Full state (tower owner: tower grid/list → tower detail).'},
+        Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'features/role-manager: RoleManagerPage — admin user list (name, email, role badge: Super Admin/Manager Admin/Admin, status badge, "Manage Permissions" button). Create Admin modal (full_name, email, temp password, role selector: Manager Admin / Admin only — Super Admin created separately).'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'Design QA W7: review RoleManagerPage + Permission Grid modal vs design spec. Verify permission toggle grid layout and RTL behavior (columns, labels, checkboxes).'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'Design QA W7: review SelvaCarePage 3 states (locked / empty / full) vs Figma. Verify locked FeatureLockedCard teaser design and empty state illustration render correctly.'},
+      }},
+      { label:'Mon 24', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Hook requirePermission(module, action) middleware onto EVERY existing admin endpoint. Role Manager APIs: GET /admin/role-manager/admins, POST (create admin), PATCH .../role (reassign — Manager Admin can only assign admin tier), PATCH .../permissions (Manager Admin sets per-module read/write for specific admin), PATCH .../status (suspend/reactivate). Settings: GET/PATCH /admin/settings (Super Admin only — requirePermission guard).'},
+        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'features/towers: TowerListPage — user linked towers as cards (tower image, model, installation status badge, warranty badge). TowerDetailPage: 9 sections (model/size/color/plants/purchase_date/batch/invoice/serial + installation status chip + location editable + warranty section + maintenance bookings tab + complaints tab + spare parts eligibility).'},
+        Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'Permission Grid modal: table of 19 CMS modules (rows) × Read/Write (columns), toggle checkboxes per admin. Super Admin row → all disabled (full access implied). Manager Admin row → all enabled by default. Admin row → toggleable. Save → PATCH .../permissions → admin_permission_overrides. features/settings: SettingsPage (SuperAdminRoute guard).'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'Design QA W7: review TowerListPage (user — tower cards with status + warranty badges) and TowerDetailPage 9 sections vs Figma. Flag any missing sections or incorrect data display.'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'Design QA W7: review SettingsPage vs design spec. Verify SuperAdmin-only guard visual treatment. Audit all admin sidebar navigation link icons and active states vs Figma.'},
+      }},
+      { label:'Tue 25', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Write integration tests: permission middleware — verify Admin cannot call Super Admin-only endpoints (/settings, /warranty-override), verify Manager Admin can set permissions for Admin but not for another Manager Admin. Test PermissionService.can() with all 3 role tiers. Fix any permission gaps.'},
+        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'features/towers continued: Tower location update — tap location field → expo-maps location picker / Google Maps SDK → PATCH /towers/:id/location → creates tower_location_history entry + admin notification alert. WarrantyBadge component: in-warranty → green badge + "X days remaining"; out-of-warranty → red badge + "Expired X days ago".'},
+        Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'ADMIN DASHBOARD COMPLETE — final polish pass: verify all 19 pages render correctly with real API data, all RTL layouts correct in Arabic mode, all Arabic translation keys present (no missing strings), all loading/empty/error states working. Run full manual walkthrough as all 3 admin tiers.'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'Design QA W7: review tower location update flow (location picker modal, map display, confirmation) and WarrantyBadge component (both states: green/red) vs Figma.'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'Admin Dashboard final design audit: compile full checklist of all 19 admin pages vs Figma. Prioritize remaining visual issues by severity. Hand off to Demerdash before end of day.'},
+      }},
+      { label:'Wed 26', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'FCM Push Notifications: integrate Firebase Cloud Messaging. Backend: send FCM push on all NotificationService triggers. User App: expo-notifications device token registration on login. Add fcm_token field to users Prisma table (migration + deploy to staging + production).'},
+        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'features/care/maintenance: MaintenanceScreen (user\'s bookings list with status badges, tower info). BookMaintenanceScreen: select tower → slots filtered by tower city → slot picker (date, time, capacity remaining counter). MaintenanceDetailScreen (slot details, booking status, reschedule CTA, cancel CTA).'},
+        Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'Deploy admin dashboard to PRODUCTION (final). Post-production full walkthrough confirmation — all 19 pages on production backend. Update docs/PROJECT_MEMORY.md with "Admin Dashboard Phase 1 COMPLETE" status. Join User App development.'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'Design QA W7: review MaintenanceScreen + BookMaintenanceScreen + MaintenanceDetailScreen (user side) vs Figma. Verify slot picker time/date layout and capacity counter.'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'Design QA W7: review ComplaintsListScreen + NewComplaintScreen + ComplaintDetailScreen (user side) vs Figma. Verify category picker, file attachment UI, status timeline.'},
+      }},
+      { label:'Thu 27', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Test FCM: push notification received on physical iOS + Android device. Deep link: notification tap → navigate to correct screen (order detail, booking detail, complaint detail). Set up Expo EAS: configure eas.json with dev / preview / production build profiles.'},
+        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'features/care/complaints: ComplaintsListScreen (own complaints, status badges, created_at). NewComplaintScreen: category picker (7 fixed categories), tower selector (service complaints), order selector (order complaints), description textarea, file attachment picker. ComplaintDetailScreen (status + admin notes + own attachments).'},
+        Demerdash:{c:'c-dem-mob',tag:'Mobile',  text:'JOIN USER APP. features/care/spare-parts: SparePartsListScreen (own requests + statuses). NewSparePartRequestScreen: tower selector → warranty check (in-warranty: redirect "Your tower is under warranty — use Maintenance or Complaints"; out-of-warranty: show compatible parts filtered by tower model/size/color/plants → multi-select → submit request).'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'Design QA W7: review NewSparePartRequestScreen (warranty gate screen + compatible parts multi-select) and SparePartsListScreen vs Figma. Note: spare parts is Phase 1 — verify full flow matches design.'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'Deliver final W7 design QA report to team. Consolidate all outstanding visual issues into a single GitHub Issues list with labels (P0-visual / P1-visual / P2-visual) for W9 QA pass.'},
+      }},
+    ],
+    deliverables:[
+      'Admin Role Manager: 3-tier hierarchy (Super Admin → Manager Admin → Admin) + Permission Grid',
+      'Every admin endpoint permission-protected via requirePermission() middleware',
+      '⭐ ADMIN DASHBOARD — ALL 19 PAGES COMPLETE AND ON PRODUCTION',
+      'FCM push notifications working on physical iOS + Android devices',
+      'User App: SelvaCarePage (3 states) + Tower Detail + Maintenance + Complaints + Spare Parts (basic)',
+    ]
+  },
+  {
+    n:8, label:'Week 8 — User App Care Modules + Back Navigation + EAS Builds', dates:'Sun 30 Aug – Thu 3 Sep', theme:'Warranty · Spare Parts · Back Navigation · Care Integration · EAS Preview Build',
+    milestone:'M8 — Care Complete + EAS builds · Thu 3 Sep',
+    days:[
+      { label:'Sun 30', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'EAS Build: eas build --platform all --profile preview → submit to TestFlight + Play Store internal track. Fix any build configuration issues. Backend: GET /api/v1/towers/:towerId/compatible-spare-parts — filter product_variants by compatible_tower_model + compatible_tower_size matching tower\'s model + size. Return filtered list with availability.'},
+        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'features/care/maintenance: Reschedule booking — MaintenanceDetailScreen → "Reschedule" → new slot picker → PATCH /care/maintenance/bookings/:id/reschedule (old slot capacity released, new slot capacity incremented). Cancel booking → PATCH .../cancel → capacity released. Maintenance notifications: booking confirmation, day-before reminder, cancellation confirmation.'},
+        Demerdash:{c:'c-dem-mob',tag:'Mobile',  text:'features/care/spare-parts: SparePartDetailScreen (request status timeline, submitted items list, admin response: approved/rejected/converted_to_order). features/care/warranty: WarrantyScreen — GET /towers/:id/warranty → display purchase_date, warranty_start_date, warranty_end_date, status badge (in/out), days remaining or expired count.'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'Design QA W8: review full integration flow UX — shop → cart → register → checkout → Paymob payment sheet → payment_succeeded → order confirmed. Note any friction points. Compile usability notes for team review.'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'Design QA W8: review NotificationsScreen (user) + deep link navigation behavior vs Figma. Verify unread badge, mark-all-read, filter chips, and notification card layouts.'},
+      }},
+      { label:'Mon 31', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Backend hardening: review all 80+ endpoints for missing Zod validation. N+1 audit on list endpoints. Paymob sandbox end-to-end test using Paymob MCP in Cursor: create intention → use test credentials (from developers.paymob.com/paymob-docs/need-help/faq/test-credentials) → simulate card payment → webhook fires → HMAC-SHA512 verifies → payment_transactions updated → order status → payment_succeeded. Test payment_failed path → retry flow. Write BACKEND_HARDENING.md.'},
+        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'Full integration test pass of Week 4–7 screens: shop → add to cart → register → phone match → tower linked → care full state → book maintenance → submit complaint. Document all bugs found in GitHub Issues with P0/P1/P2 labels.'},
+        Demerdash:{c:'c-dem-mob',tag:'Mobile',  text:'WarrantyTopUpScreen: request form (user_reason textarea, maintenance_commitment_notes optional field) → POST /towers/:towerId/warranty/topup-requests. WarrantyTopUpStatusScreen: status badge + admin decision + approved_extension_until date (if approved) + rejection_reason (if rejected).'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'Design QA W8: compile complete W8 design QA report. Consolidate all outstanding visual issues across W5–W8 into final prioritized list. This becomes the W9 QA fix backlog for the team.'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'App Store asset production: finalize all App Store screenshots (iOS 6.7\" + 6.1\", Android). Create promotional text for App Store Connect + Google Play Console listings.'},
+      }},
+      { label:'Tue 1', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Backend: implement any remaining Gate 4 endpoints not yet built (POST /public/partner-requests guest-accessible, GET /me/notifications, GET /admin/dashboard full refresh). Complete Gate 4 coverage audit — verify every listed endpoint exists and is tested. Write GATE4_COVERAGE.md.'},
+        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'Installation status change request: TowerDetailPage → "Request Status Change" → modal: select new installation status + notes → POST /towers/:id/installation-status-change-request. Tower location update on TowerDetailPage: tap location field → location picker → PATCH /towers/:id/location → history entry created + admin notification. GET /towers/:id/history/location → display location history list.'},
+        Demerdash:{c:'c-dem-mob',tag:'Mobile',  text:'User App: SelvaCarePage integration test — verify all 3 states (locked/empty/full) transition correctly on auth state change. Verify Tower Detail all 9 sections render with real seeded data. Fix all Demerdash-owned bugs from W8 integration test pass.'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'Finalize app icon + splash screen: export all required sizes (iOS: 20pt–1024pt, Android: 48dp–512dp adaptive icon). Verify assets render correctly in Expo config.'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'Final App Store asset review: check all screenshots, icon, splash, and metadata are complete and correct in both Arabic + English. Hand off complete asset package to Demerdash for Week 9 submission.'},
+      }},
+      { label:'Wed 2', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Review all 80+ backend endpoints for missing Zod validations, missing ownership checks, missing audit log calls. Fix all P2 bugs found in admin UAT. Write docs/API_CONVENTIONS.md final version with all endpoint signatures, auth requirements, error codes, pagination format.'},
+        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'Fix all P0+P1 bugs from Monday\'s integration test pass. Verify Arabic RTL on all User App screens built so far (Weeks 4–8): text direction, icon mirroring, layout flip. Verify Arabic translation strings present for all static UI strings.'},
+        Demerdash:{c:'c-dem-mob',tag:'Mobile',  text:'User App: back navigation behavior per Gate 1.3 — back from homepage → exit confirmation dialog, back from any tab → return to homepage, back from login/register → previous screen, back from chatbot → minimize. Unsaved form warning dialogs on NewComplaintScreen + NewSparePartRequestScreen + CheckoutStepper.'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'Design support W8: answer any final design questions. Review remaining open design issues. Prepare W9 design QA handoff document.'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'Design support W8: final review of all user-facing error states, empty states, and loading states vs Figma across all 27 user app screens.'},
+      }},
+      { label:'Thu 3', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Production monitoring: GCP Cloud Logging error rate alerts (alert if > 5% error rate). Cloud Run health check dashboard. Supabase slow query alerts. Rate limiting hardened on auth endpoints (/auth/register, /auth/login, /auth/onboarding/preview-match) and assistant endpoint.'},
+        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'features/notifications: NotificationsScreen complete — full list, mark as read (tap), mark all read (header button), filter by notification_type, unread badge on Care/Profile tab. Deep link from FCM push notification tap → navigate to correct screen (order detail, booking detail, complaint detail).'},
+        Demerdash:{c:'c-dem-mob',tag:'Mobile',  text:'User App: spare parts warranty gate hardening (in-warranty → redirect to maintenance/complaints, out-of-warranty → compatible parts). Full integration test of entire care flow: tower detail → warranty → maintenance booking → complaint → spare parts. Document all P0/P1 bugs.'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'W9 design QA: systematic review of all 27 User App screens in Arabic RTL mode vs Figma RTL specs. Document every layout break, icon mirror issue, text overflow problem.'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'W9 design QA: systematic review of all 19 Admin Dashboard pages in Arabic RTL mode. Flag any remaining RTL issues not caught in earlier passes.'},
+      }},
+    ],
+    deliverables:[
+      'User App: Warranty + Spare Parts (full flows) + back navigation + care integration complete + Notifications',
+      'EAS internal preview builds submitted to TestFlight + Google Play internal track',
+      'FCM deep links: push notification → correct screen navigation working on device',
+      'BACKEND_HARDENING.md: all N+1 queries fixed, all Zod validations added',
+    ]
+  },
+  {
+    n:9, label:'Week 9 — QA + Arabic RTL Polish + App Store Submission', dates:'Sun 6 Sep – Thu 10 Sep', theme:'Integration tests · P0+P1 fixes · Arabic RTL · TestFlight + Play Store submission',
+    milestone:'M9 — QA + App Store submissions · Thu 10 Sep',
+    days:[
+      { label:'Sun 6', cols:{
+        Ahmed:   {c:'c-qa',     tag:'QA',       text:'Integration tests: (1) Full user journey — guest → register (phone match) → checkout → Paymob sandbox (test card from developers.paymob.com/paymob-docs/need-help/faq/test-credentials) → webhook fires → HMAC-SHA512 verified → payment_transactions row created → order status = payment_succeeded → user sees order confirmed (zero admin intervention). (2) Payment failed path: decline test card → payment_failed → retry prompt → new intention created → second attempt succeeds. (3) Amount is in piastres — verify 100 EGP → 10000 in intention body. (4) CSV import edge cases. (5) Permission middleware all 3 tiers.'},
+        Amr:     {c:'c-qa',     tag:'QA',       text:'User App QA: systematically test all 27 screens as all 4 user states (Guest / Registered No Towers / Tower Owner / Admin trying to use customer app). Document every bug in GitHub Issues with P0/P1/P2 labels, screen name, reproduction steps, screenshot.'},
+        Demerdash:{c:'c-qa',    tag:'QA',       text:'User App RTL QA: test every screen in Arabic mode. Flag any layout breaks: DataTable-equivalent list layouts, card layouts, form fields, navigation headers, bottom tabs, modals, drawers. Screenshot all RTL issues.'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'W9 design QA: verify all empty state illustrations render correctly in-app vs Figma (no-orders, no-towers, no-complaints, no-notifications, no-bookings, no-bookings for maintenance).'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'W9 design QA: verify all loading skeleton designs match Figma (correct card shapes, correct number of skeleton rows, correct animation).'},
+      }},
+      { label:'Mon 7', cols:{
+        Ahmed:   {c:'c-qa',     tag:'QA',       text:'Fix all P0 backend bugs from Sunday QA pass (blocking bugs only). Performance review: identify slow RTK Query fetches, check for N+1 Prisma queries on list endpoints, add missing database indexes. Set up PgBouncer connection pooling via Supabase if needed.'},
+        Amr:     {c:'c-qa',     tag:'QA',       text:'Fix P0+P1 User App bugs from Sunday QA pass. Priority focus: auth flows (register/login/logout/session expiry), tower ownership state transitions, cart merge edge cases (empty guest cart, duplicate items), Paymob checkout on slow connections (timeout handling, SDK error states, retry flow).'},
+        Demerdash:{c:'c-qa',    tag:'QA',       text:'Fix all RTL layout bugs. Ensure Arabic translations are complete for all 27 User App screens (no English strings visible in Arabic mode). Test language toggle at runtime: switch ar ↔ en → entire app direction flips correctly including icons, drawer direction, text alignment.'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'W9 design QA: review App Store screenshots in App Store Connect preview — verify they look correct on all device sizes. Request any fixes from team.'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'W9 design QA: compile FINAL design QA report — all remaining visual issues. Prioritize: P0 (blocks release) / P1 (important for launch) / P2 (post-launch). Hand off to Ahmed/Amr/Demerdash.'},
+      }},
+      { label:'Tue 8', cols:{
+        Ahmed:   {c:'c-qa',     tag:'QA',       text:'Write selva-shared TypeScript types package: extract shared API interfaces (ApiResponse<T>, PaginatedResponse<T>, all entity types matching Prisma models, Permission flags object, all enums). Publish as internal package usable by both admin dashboard and user app.'},
+        Amr:     {c:'c-qa',     tag:'QA',       text:'User App polish: loading skeletons on all data screens (not just spinners), error toast messages on all API failures with specific messages, offline detection banner ("No internet connection — some features unavailable"), pull-to-refresh on all list screens.'},
+        Demerdash:{c:'c-qa',    tag:'QA',       text:'User App polish: empty state illustrations on all list screens (no orders / no towers / no complaints / no notifications / no bookings etc.), form validation error messages present in both Arabic + English, character limits shown on textareas.'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'W9 final pass: verify app icon + splash screen render correctly on physical iOS + Android devices (check Demerdash\'s test build). Sign off on all visual assets.'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'W9 final pass: last review of all in-app Arabic copy — check for typos, unnatural phrasing, inconsistent terminology. Deliver final Arabic copy corrections list.'},
+      }},
+      { label:'Wed 9', cols:{
+        Ahmed:   {c:'c-qa',     tag:'QA',       text:'EAS PRODUCTION build: eas build --platform ios --profile production → submit to TestFlight. eas build --platform android --profile production → submit to Google Play internal testing. OTA update config: expo-updates configured for hotfixes without store re-submission.'},
+        Amr:     {c:'c-qa',     tag:'QA',       text:'Admin Dashboard regression test on PRODUCTION: verify all 19 admin pages work after W5–W8 backend changes. Test full admin workflow: login → dashboard → import towers CSV → view customer → manage order → view Paymob transaction (webhook-confirmed) → issue refund → create maintenance slot → resolve complaint → role manager permission grid.'},
+        Demerdash:{c:'c-qa',    tag:'QA',       text:'App icon: 1024×1024 PNG (iOS) + adaptive icon (Android). Splash screen. App name "Selva / سيلفا". App Store metadata: short + long description in Arabic + English. Screenshots: 6.7" iPhone + 6.1" iPhone + Android screenshots.'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'W9 support: available for any last-minute design decisions or asset exports needed for UAT or App Store submission.'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'W9 support: sign off on all final visual states. Confirm Phase 1 design work complete.'},
+      }},
+      { label:'Thu 10', cols:{
+        Ahmed:   {c:'c-qa',     tag:'QA',       text:'Post-EAS build smoke test: production User App connects to production backend → all 80+ endpoints respond correctly. Verify production admin dashboard + production user app both connected to same production backend. Fix any production-only issues.'},
+        Amr:     {c:'c-qa',     tag:'QA',       text:'Tech Lead UAT prep: write UAT test script covering (1) Admin full workflow — all 19 pages, (2) User registration + tower + care journey — all 27 screens, (3) Arabic RTL verification checklist. Estimate time needed for full UAT session.'},
+        Demerdash:{c:'c-qa',    tag:'QA',       text:'Full app polish pass: verify every screen has correct navigation guards, no broken empty states, no untranslated strings in Arabic mode, all back navigation behaviors correct per Gate 1.3 spec (back from homepage → exit dialog, back from tab → homepage, etc.).'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'W10 UAT design support: attend Tech Lead UAT session. Note any visual feedback from Eng. Amira. Ready to make fast design fixes if needed for UAT sign-off.'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'W10 UAT design support: monitor UAT session feedback. Deliver any corrected design assets same day if visual issues are flagged by tech lead.'},
+      }},
+    ],
+    deliverables:[
+      'All P0+P1 bugs fixed across backend + User App + Admin Dashboard',
+      'Arabic RTL verified on all 46 screens (19 admin + 27 user app)',
+      'iOS TestFlight production build submitted',
+      'Android Google Play internal testing build submitted',
+      'App polish: loading skeletons + error toasts + empty states + offline banner complete',
+      'selva-shared TypeScript types package published',
+    ]
+  },
+  {
+    n:10, label:'Week 10 — UAT + Production Hardening + Phase 1 Complete', dates:'Sun 13 Sep – Thu 17 Sep', theme:'Tech Lead UAT · Final bug fixes · Production docs · Phase 1 handoff',
+    milestone:'M10 — PHASE 1 COMPLETE · Thu 17 Sep 2026 ⭐',
+    days:[
+      { label:'Sun 13', cols:{
+        Ahmed:   {c:'c-qa',     tag:'UAT',      text:'GCP Cloud Run production hardening: auto-scaling config (min-instances=1 to avoid cold starts), request timeout config, memory limits. Database: review all Prisma queries on list endpoints for N+1 issues. Optimize slow queries identified in Week 9.'},
+        Amr:     {c:'c-qa',     tag:'UAT',      text:'User App final QA on real physical devices: latest iPhone (iOS) + Android mid-range device. Test cold start time (< 3 seconds target), scroll performance on all list screens, image loading via Supabase signed URLs, deep link navigation from notifications.'},
+        Demerdash:{c:'c-qa',    tag:'UAT',      text:'Admin dashboard final QA on PRODUCTION: all 19 pages, import a real CSV file (use test data), complete full admin order workflow (create order → review evidence → approve → fulfilled), verify Role Manager permission changes take effect immediately.'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'W10 final: Phase 1 design retrospective — document all design decisions, design system files organized, Figma files finalized and archived for handoff.'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'W10 final: Phase 1 design complete. All 46 screens (19 admin + 27 user) delivered and verified. Figma file archived.'},
+      }},
+      { label:'Mon 14', cols:{
+        Ahmed:   {c:'c-qa',     tag:'UAT',      text:'Write docs/PROJECT_MEMORY.md — complete Phase 1 summary: all 80+ API endpoints grouped by feature, all 39 DB tables, all 18 epics completed, known limitations, Phase 2 prerequisites. This is the permanent technical record of Phase 1.'},
+        Amr:     {c:'c-qa',     tag:'UAT',      text:'App Store Connect metadata finalized (iOS): app name, description (ar+en), keywords, privacy policy URL (required — must be a real URL), age rating, App Store screenshots. Google Play Console metadata finalized (Android): matching content.'},
+        Demerdash:{c:'c-qa',    tag:'UAT',      text:'Admin Dashboard Phase 1 handoff document for tech lead: production admin URL, how to reset admin password, how to create first Super Admin user, how to import towers (step-by-step), how to manage orders end-to-end, what to configure in Settings.'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'PHASE 1 DESIGN COMPLETE. All assets delivered, UAT sign-off obtained. Figma files finalized and organized for future reference.'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'PHASE 1 DESIGN COMPLETE. All 46 screens designed, reviewed, and verified in production. Ready for Phase 2 kickoff.'},
+      }},
+      { label:'Tue 15', cols:{
+        Ahmed:   {c:'c-qa',     tag:'UAT',      text:'TECH LEAD UAT SESSION (full day). Admin journey with Eng. Amira: login → dashboard → import towers CSV → view customer → manage order → view Paymob transaction (payment_succeeded) → issue test refund → create maintenance slot → resolve complaint → role manager (create admin, set permissions). User App journey: install → browse marketplace → add to cart → register (phone match) → checkout (Paymob card payment via sandbox) → payment_succeeded → order confirmed → Selva Care → book maintenance → submit complaint. Arabic mode: switch language → verify RTL.'},
+        Amr:     {c:'c-qa',     tag:'UAT',      text:'TECH LEAD UAT SESSION (full day, continued). Support Eng. Amira during User App walkthrough. Answer questions about user flows, take notes on all feedback. Flag which bugs are P0 (blocking) vs P1 (important) vs P2 (nice to have).'},
+        Demerdash:{c:'c-qa',    tag:'UAT',      text:'TECH LEAD UAT SESSION (full day, continued). Support Eng. Amira during Admin Dashboard walkthrough. Demo Role Manager: show Super Admin → Manager Admin → Admin permission hierarchy in action.'},
+        Salma:   {c:'c-ux',     tag:'UAT',      text:'Attend Tech Lead UAT session. Be available to answer visual/design questions from Eng. Amira. Note any visual feedback for same-day fixes.'},
+        Hanaa:   {c:'c-ux',     tag:'UAT',      text:'Attend Tech Lead UAT session. Document any visual issues flagged. Ready to export corrected assets immediately if UAT surfaces design bugs.'},
+      }},
+      { label:'Wed 16', cols:{
+        Ahmed:   {c:'c-qa',     tag:'UAT',      text:'Fix all CRITICAL bugs found in UAT. Re-deploy backend if needed (develop → main merge → production deploy via GitHub Actions). Get UAT sign-off from Eng. Amira after fixes confirmed on production.'},
+        Amr:     {c:'c-qa',     tag:'UAT',      text:'Fix all User App bugs from UAT. If critical fixes require new binary → re-submit EAS build → re-submit to TestFlight + Play Store. OTA update via expo-updates for non-binary fixes.'},
+        Demerdash:{c:'c-qa',    tag:'UAT',      text:'Fix all Admin Dashboard bugs from UAT. Re-deploy admin dashboard if needed. Confirm all fixes visible on production.'},
+        Salma:   {c:'c-ux',     tag:'UAT',      text:'Fix any visual bugs flagged during UAT. Export corrected assets (icons, illustrations, colors) same day so Ahmed/Amr/Demerdash can apply and re-deploy before sign-off.'},
+        Hanaa:   {c:'c-ux',     tag:'UAT',      text:'Fix any copy or translation issues flagged during UAT. Deliver corrected Arabic strings to Amr/Demerdash for OTA update or re-build.'},
+      }},
+      { label:'Thu 17', cols:{
+        Ahmed:   {c:'c-qa',     tag:'Done',     text:'PHASE 1 COMPLETE. Write docs/DEPLOYMENT.md: production URLs, environment variables, deployment checklist (migration → backend → admin → smoke test), rollback procedure. Final: all 80+ endpoints documented, all 39 DB tables migrated, all 18 epics delivered.'},
+        Amr:     {c:'c-qa',     tag:'Done',     text:'PHASE 1 COMPLETE. Write User App docs/HANDOFF.md: all 27 screens documented, navigation structure, RTK store shape, EAS build commands, OTA update procedure. Final regression test of production user app.'},
+        Demerdash:{c:'c-qa',    tag:'Done',     text:'PHASE 1 COMPLETE. Write Admin Dashboard docs/HANDOFF.md: all 19 pages documented, admin role creation guide, how to manage each operational workflow end-to-end. Live demo of production admin + user app to Eng. Amira.'},
+        Salma:   {c:'c-ux',     tag:'Done',     text:'PHASE 1 DESIGN COMPLETE. Deliver final Figma handoff: all screens organized, component library documented, design tokens exported. Phase 1 done.'},
+        Hanaa:   {c:'c-ux',     tag:'Done',     text:'PHASE 1 DESIGN COMPLETE. Final Figma archive: all 46 screens (19 admin + 27 user app) organized by feature, with handoff notes and asset exports. Phase 1 done.'},
+      }},
+    ],
+    deliverables:[
+      'Tech Lead UAT (Eng. Amira) passed with formal sign-off',
+      'All critical UAT bugs fixed and confirmed on production',
+      'iOS App Store submission ready (TestFlight approved)',
+      'Android Google Play submission ready (internal testing approved)',
+      'DEPLOYMENT.md + PROJECT_MEMORY.md complete',
+      '⭐ PHASE 1 FULLY COMPLETE — Thu 17 Sep 2026',
+    ]
+  },
+];
+
+const MILESTONES = [
+  {wk:'W1',label:'Foundation',date:'16 Jul'},
+  {wk:'W2',label:'Admin Core',date:'24 Jul'},
+  {wk:'W3',label:'Staging live',date:'31 Jul'},
+  {wk:'W4',label:'Import + App',date:'6 Aug'},
+  {wk:'W5',label:'Production',date:'13 Aug'},
+  {wk:'W6',label:'Commerce',date:'20 Aug'},
+  {wk:'W7',label:'Admin DONE',date:'27 Aug'},
+  {wk:'W8',label:'Care + EAS',date:'3 Sep'},
+  {wk:'W9',label:'App Store',date:'10 Sep'},
+  {wk:'W10',label:'COMPLETE',date:'17 Sep'},
+];
+
+const DAY_HEADERS = {
+  1: ['Mon 13','Tue 14','Wed 15','Thu 16'],
+  default: ['Sun','Mon','Tue','Wed','Thu']
+};
+
+let activeWeek = 'all';
+let activeMember = 'all';
+
+function buildMilestones() {
+  const row = document.getElementById('msRow');
+  row.innerHTML = MILESTONES.map((m,i) => `
+    <div class="ms-item" onclick="showWeeks(${i+1}, document.querySelectorAll('.wtab')[${i+1}])">
+      <div class="ms-wk">${m.wk}</div>
+      <div class="ms-line"><div class="ms-dot"></div></div>
+      <div class="ms-label">${m.label}</div>
+      <div class="ms-date">${m.date}</div>
+    </div>
+  `).join('');
+}
+
+function buildWeeks() {
+  const container = document.getElementById('weeksContainer');
+  container.innerHTML = '';
+  WEEKS.forEach(w => {
+    const days = w.n === 1 ? DAY_HEADERS[1] : DAY_HEADERS.default;
+    const members = ['Ahmed','Amr','Demerdash','Salma','Hanaa'];
+
+    const visibleMembers = activeMember === 'all' ? members : [activeMember];
+    if (!visibleMembers.some(m => w.days.some(d => d.cols[m]))) return;
+
+    const section = document.createElement('div');
+    section.className = 'week-section visible';
+    section.dataset.week = w.n;
+
+    const dayHeaders = days.map(d => `<th>${d}</th>`).join('');
+    const rows = visibleMembers.map(member => {
+      const cells = w.days.map((day, di) => {
+        const task = day.cols[member];
+        if (!task) return `<td class="task-cell"><div class="task-pill" style="background:var(--surface-alt);border:0.5px solid var(--border);min-height:52px;opacity:.4"><span class="pill-text" style="color:var(--text-muted);font-size:10px">—</span></div></td>`;
+        return `<td class="task-cell">
+          <div class="task-pill ${task.c}">
+            <span class="pill-tag">${task.tag}</span>
+            <span class="pill-text">${task.text}</span>
+          </div>
+        </td>`;
+      }).join('');
+      return `<tr><td>${member}</td>${cells}</tr>`;
+    }).join('');
+
+    const dels = w.deliverables.map(d => `<div class="del-item"><span class="del-check">✓</span><span>${d}</span></div>`).join('');
+
+    section.innerHTML = `
+      <div class="week-header">
+        <div>
+          <div class="week-label">${w.label}</div>
+          <div class="week-dates">${w.dates}</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <div class="week-theme">${w.theme}</div>
+          <div class="milestone-chip">${w.milestone}</div>
+        </div>
+      </div>
+      <div class="day-grid">
+        <table>
+          <thead><tr><th>Member</th>${dayHeaders}</tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+      <div class="deliverables">
+        <div class="del-heading">Week ${w.n} deliverables</div>
+        <div class="del-list">${dels}</div>
+      </div>
+    `;
+    container.appendChild(section);
+  });
+}
+
+function showWeeks(wk, btn) {
+  activeWeek = wk;
+  document.querySelectorAll('.wtab').forEach(t => t.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+
+  const sections = document.querySelectorAll('.week-section');
+  if (wk === 'all') {
+    sections.forEach(s => s.style.display = 'block');
+    document.getElementById('progressLabel').textContent = 'Showing: All 10 weeks';
+    document.getElementById('progressFill').style.width = '100%';
+  } else {
+    sections.forEach(s => {
+      s.style.display = (parseInt(s.dataset.week) === wk) ? 'block' : 'none';
+    });
+    const pct = Math.round((wk/10)*100);
+    document.getElementById('progressLabel').textContent = `Week ${wk} of 10 — ${pct}% through Phase 1`;
+    document.getElementById('progressFill').style.width = pct + '%';
+  }
+  window.scrollTo({top: document.getElementById('weeksContainer').offsetTop - 20, behavior: 'smooth'});
+}
+
+function filterMember(m, btn) {
+  activeMember = m;
+  document.querySelectorAll('.mtab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  buildWeeks();
+  const wkNum = activeWeek === 'all' ? null : activeWeek;
+  if (wkNum) {
+    document.querySelectorAll('.week-section').forEach(s => {
+      s.style.display = (parseInt(s.dataset.week) === wkNum) ? 'block' : 'none';
+    });
+  }
+}
+
+buildMilestones();
+buildWeeks();
+</script>
+</body>
+</html>
