@@ -4,10 +4,10 @@ Day-by-day schedule for all 5 team members across 10 weeks. Static HTML — no i
 
 ## View
 
-Open [`selva_timeframe_paymob.html`](selva_timeframe_paymob.html) in a browser (double-click, or from this folder):
+Open [`index.html`](index.html) in a browser (double-click, or from this folder):
 
 ```powershell
-start selva_timeframe_paymob.html
+start index.html
 ```
 
 ## Schedule
@@ -56,7 +56,7 @@ start selva_timeframe_paymob.html
 ```
 time-frame/
 ├── README.md
-└── selva_timeframe_paymob.html
+└── index.html
 ```
 
 ## Related
