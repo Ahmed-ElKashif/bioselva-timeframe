@@ -1,6 +1,6 @@
 # Selva Platform — Phase 1 Timeframe
 
-Day-by-day schedule for all 5 team members across 10 weeks. Static HTML — no install or build.
+Day-by-day schedule for all 5 team members across 11 weeks. Static HTML — no install or build.
 
 ## View
 
@@ -15,7 +15,7 @@ start index.html
 | | |
 |---|---|
 | **Start** | Mon 13 Jul 2026 |
-| **End** | Thu 17 Sep 2026 |
+| **End** | Thu 24 Sep 2026 |
 | **Work days** | Sun – Thu |
 | **Team** | Ahmed · Amr · Demerdash · Salma · Hanaa |
 | **Stack** | Node/Express · React (Vite) · React Native/Expo · Prisma/PostgreSQL |
@@ -36,16 +36,17 @@ start index.html
 2. Admin Core
 3. Products + CMS
 4. Tower Import
-5. Orders + Auth
-6. Services
+5. Orders + Paymob Mobile (Expo Go + Unified Checkout WebView)
+6. Services (Account + Orders; Paymob checkout in W5)
 7. Admin DONE
 8. Care + Builds
 9. QA + Submission
-10. UAT + Launch
+10. UAT + Launch (Phase 1 complete)
+11. Selva Assistant (simple grounded chat — CMS `assistant_source` + OpenAI)
 
 ## What’s in the page
 
-- Milestone timeline (M1–M10)
+- Milestone timeline (M1–M11)
 - Week tabs and member filter
 - Day grid with per-person tasks
 - Weekly deliverables

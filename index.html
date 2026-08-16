@@ -225,10 +225,10 @@
 
   <div class="page-header">
     <h1>Selva Platform — Phase 1 Timeframe</h1>
-    <p>Day-by-day plan for all 5 team members across 10 weeks</p>
+    <p>Day-by-day plan for all 5 team members across 11 weeks</p>
     <div class="meta-row">
       <div class="meta-chip"><strong>Start</strong> Mon 13 Jul 2026</div>
-      <div class="meta-chip"><strong>End</strong> Thu 17 Sep 2026</div>
+      <div class="meta-chip"><strong>End</strong> Thu 24 Sep 2026</div>
       <div class="meta-chip"><strong>Work days</strong> Sun – Thu</div>
       <div class="meta-chip"><strong>Team</strong> Ahmed · Amr · Demerdash · Salma · Hanaa</div>
       <div class="meta-chip"><strong>Stack</strong> Node/Express · React (Vite) · React Native/Expo · Prisma/PostgreSQL</div>
@@ -254,7 +254,7 @@
 
   <!-- Progress -->
   <div class="progress-section">
-    <div class="progress-label" id="progressLabel">Showing: All 10 weeks</div>
+    <div class="progress-label" id="progressLabel">Showing: All 11 weeks</div>
     <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:100%"></div></div>
   </div>
 
@@ -265,12 +265,13 @@
     <button class="wtab" onclick="showWeeks(2,this)">W2 — Admin Core</button>
     <button class="wtab" onclick="showWeeks(3,this)">W3 — Products + CMS</button>
     <button class="wtab" onclick="showWeeks(4,this)">W4 — Tower Import</button>
-    <button class="wtab" onclick="showWeeks(5,this)">W5 — Orders + Auth</button>
+    <button class="wtab" onclick="showWeeks(5,this)">W5 — Orders + Paymob Mobile</button>
     <button class="wtab" onclick="showWeeks(6,this)">W6 — Services</button>
     <button class="wtab" onclick="showWeeks(7,this)">W7 — Admin DONE</button>
     <button class="wtab" onclick="showWeeks(8,this)">W8 — Care + Builds</button>
     <button class="wtab" onclick="showWeeks(9,this)">W9 — QA + Submission</button>
     <button class="wtab" onclick="showWeeks(10,this)">W10 — UAT + Launch</button>
+    <button class="wtab" onclick="showWeeks(11,this)">W11 — Selva Assistant</button>
   </div>
 
   <!-- Member filter -->
@@ -475,40 +476,40 @@ const WEEKS = [
     ]
   },
   {
-    n:5, label:'Week 5 — Admin Orders + Paymob Integration + Partners · User App Auth', dates:'Sun 9 Aug – Thu 13 Aug', theme:'Paymob Integration · Orders · Partners · User Registration + Auth flow',
-    milestone:'M5 — Paymob live + PRODUCTION deploy · Thu 13 Aug',
+    n:5, label:'Week 5 — Admin Orders + Paymob Integration + Partners · User App Paymob Checkout', dates:'Sun 9 Aug – Thu 13 Aug', theme:'Paymob Integration · Orders · Partners · User App Expo Go + Unified Checkout WebView (auth already shipped)',
+    milestone:'M5 — Paymob live + PRODUCTION deploy · User App Paymob sandbox · Thu 13 Aug',
     days:[
       { label:'Sun 9', cols:{
         Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Paymob setup (no Node SDK — paymob-node does not exist on npm). Create PaymobService.ts with axios (already in package.json): Authorization Token ${PAYMOB_SECRET_KEY} (egy_sk_test_*/egy_sk_live_*), POST https://accept.paymob.com/v1/intention/ — amount in piastres (100 EGP = 10000), currency EGP, payment_methods as integration ID integers, items sum must equal amount, unique special_reference. Returns client_secret + intention id + paymob order id. Schema: drop payment_evidence; add payment_transactions (intention_id, paymob_order_id, paymob_transaction_id, special_reference, client_secret, payment_method, webhook_snapshot JSONB). Run migration. Orders: GET /admin/orders, PATCH /admin/orders/:id/status.'},
-        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'features/auth: OnboardingScreen — welcome message, phone input, normalize + POST /auth/onboarding/preview-match API call (show "We found your tower!" or "No towers found — you can add later"), customer type selector (Egypt / International), continue CTA.'},
+        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'Auth Week 5 DONE (onboarding/register/login/guest) — do not rebuild. Stay on Expo (Expo IS React Native — do NOT eject, do NOT add Dev Client / paymob-reactnative this week). Install react-native-webview (Expo-compatible). Confirm scheme selva already in app.json. Path A: Unified Checkout WebView via checkoutUrl from backend — works in Expo Go. Backend checkout APIs already live (Ahmed). Native RN SDK is optional later, not this week.'},
         Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'features/orders: OrderListPage — DataTable with status/date/payment_method/customer filters (replace payment_path with payment_method: card/wallet/bnpl). OrderDetailPage — items list, totals, contact info, Paymob transaction ID, payment status badge (succeeded/failed/pending), refund action button.'},
         Salma:   {c:'c-ux',     tag:'Design',   text:'W5 design support: answer open User App design questions from Amr\'s Week 4 handoff (assistant widget edge cases, spare parts UI, weather widget). Review built screens vs Figma — flag deviations.'},
         Hanaa:   {c:'c-ux',     tag:'Design',   text:'W5 design support: review all 27 User App screens built so far against Figma. Document gaps between design and implementation. Prepare QA checklist for Week 9.'},
       }},
       { label:'Mon 10', cols:{
         Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Paymob webhook: POST /api/v1/webhooks/paymob — mount ahead of global rate limiter. Verify HMAC-SHA512 of Paymob\'s 20-key ordered concatenation using PAYMOB_HMAC_SECRET. Idempotent on paymob_transaction_id; always 200 once recorded. Update payment_transactions + order status (success → payment_succeeded, else payment_failed). Trigger NotificationService. Admin APIs: GET /admin/payment-transactions; POST /admin/payment-transactions/:id/refund → POST /api/acceptance/void_refund/refund { transaction_id, amount_cents }; final refund status from parent-transaction callback. Env Zod: PAYMOB_SECRET_KEY (egy_sk_*) + PUBLIC_KEY + HMAC_SECRET + CARD/WALLET/BNPL integration IDs + BASE/CHECKOUT/WEBHOOK/REDIRECT URLs. Set Transaction Processed callback on each integration ID in dashboard (notification_url is card-only).'},
-        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'features/auth: RegisterScreen (RHF+Zod: phone, email, password, full_name, country, city, customer_type → POST /auth/register → backend normalizes phone → links towers if match → merges guest cart → redirect). LoginScreen (email+password → POST /auth/login → authSlice update → fetch permissions).'},
+        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'features/checkout: CheckoutStepper steps 1–2 — (1) cart summary + edit items, (2) contact + delivery + payment method selector (card / wallet / bnpl). RTK Query against existing backend: POST /orders/checkout, GET /orders/:id/payment-status, POST /orders/:id/retry-payment. Enable Cart checkout CTA for authenticated users (guest still → AuthPromptModal). Never put PAYMOB_SECRET_KEY in the app — primary field this week is checkoutUrl (publicKey/clientSecret unused for WebView path).'},
         Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'features/payment-transactions: PaymentTransactionsPage — DataTable (filter by status/method/date), transaction detail slide-over (Paymob transaction ID, amount, currency, payment method badge, webhook snapshot JSON viewer). Refund button → confirm modal → POST /admin/payment-transactions/:id/refund. No manual approve/reject — Paymob handles this automatically via webhook.'},
         Salma:   {c:'c-ux',     tag:'Design',   text:'Admin dashboard design QA: Order Detail page + Payment Transactions page vs Figma. Update Figma to reflect Paymob transaction viewer (no approve/reject buttons, only refund button). Note any missing states (empty state, failed transaction display, refund confirmation modal).'},
         Hanaa:   {c:'c-ux',     tag:'Design',   text:'Admin dashboard design QA: Partners page + Partner Requests page vs Figma. Document all RTL layout issues found in Arabic mode.'},
       }},
       { label:'Tue 11', cols:{
         Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'User checkout API: POST /api/v1/orders/checkout → creates order (status: payment_pending) → POST /v1/intention/ → returns { orderId, orderNumber, clientSecret, publicKey, checkoutUrl, amountCents, currency }. Dual client path: WebView/Unified Checkout uses checkoutUrl (Expo Go OK); native Paymob RN SDK uses clientSecret + publicKey (needs prebuild + dataBinding + EAS dev-client). GET /api/v1/orders/:id/payment-status; POST /orders/:id/retry-payment. Partners: GET/POST /admin/partners, PATCH /admin/partners/:id. Partner locations CRUD + partner requests lifecycle.'},
-        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'features/auth: RTK authSlice update — store user profile + tower ownership status (Tower Owner / No Towers) + permission flags from GET /me/permissions. Redirect logic after login (return to cart/checkout/previous screen based on navigation history).'},
+        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'CheckoutStepper step 3 — Unified Checkout WebView: after POST /orders/checkout open react-native-webview with source={{ uri: checkoutUrl }}. Keep Bioselva orderId from checkout (deep link has paymobOrder only). onNavigationStateChange / onShouldStartLoadWithRequest: detect selva://payment-result or redirect URL → close WebView and navigate to result screen. Always poll GET /orders/:id/payment-status — webhook is source of truth, not redirect query params. Works in Expo Go.'},
         Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'features/partners: PartnersPage — directory DataTable, Create/Edit partner slide-over (type, profile, contact, status). PartnerRequestsPage — requests queue with lifecycle status actions (Under Review → Contacted → Approved/Rejected).'},
         Salma:   {c:'c-ux',     tag:'Design',   text:'Prepare full Arabic RTL design verification checklist for Week 9 QA: every screen, every component, every form — ar vs en toggle expected behavior documented.'},
         Hanaa:   {c:'c-ux',     tag:'Design',   text:'Create empty state illustration assets (SVG) for User App: no-orders, no-towers, no-complaints, no-notifications, no-bookings. Export to Figma + hand off to Amr/Demerdash.'},
       }},
       { label:'Wed 12', cols:{
         Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Notification triggers: wire NotificationService to Paymob webhook events — payment_succeeded → user notification (order confirmed) + admin alert, payment_failed → user notification (retry prompt), order_refunded → user. Remove evidence-based triggers (no longer needed). Public partner APIs: GET /public/partners, POST /public/partner-requests. Env Zod complete: PAYMOB_SECRET_KEY + PUBLIC_KEY + HMAC_SECRET + CARD/WALLET/BNPL_INTEGRATION_ID + BASE_URL + CHECKOUT_URL + WEBHOOK_URL + REDIRECT_URL.'},
-        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'features/auth: GuestAwareRoute — detect guest session on app open (auto-create guest session if no token exists). GuestAvatar component (tap → login/register prompt). AuthPromptModal: appears on checkout or locked feature tap.'},
+        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'CheckoutSuccessPage + CheckoutFailedPage — poll payment-status until payment_succeeded / payment_failed. Handle deep link selva://payment-result?success=0|1&paymobOrder=… (matches backend redirect; still poll with stored orderId). Retry CTA → POST /orders/:id/retry-payment → open WebView with new checkoutUrl (retry keeps original payment_method). i18n for pending/success/fail + retry.'},
         Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'Polish admin Orders + Payment Transactions + Partners: empty states, loading states, error toasts on API failure (including Paymob refund failure toast). RTL verified on all 3 new pages. Arabic translation keys added for all new strings including Paymob payment method labels (card/wallet/bnpl) in Arabic.'},
         Salma:   {c:'c-ux',     tag:'Design',   text:'Finalize app icon design: 1024×1024 iOS + Android adaptive icon. Splash screen design. Export assets ready for Week 9 submission.'},
         Hanaa:   {c:'c-ux',     tag:'Design',   text:'App Store screenshots design: 6.7-inch iPhone + 6.1-inch iPhone + Android. Create screenshot frames with device mockups for all key screens (marketplace, care, tower detail).'},
       }},
       { label:'Thu 13', cols:{
         Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Deploy backend to GCP Cloud Run PRODUCTION. Run Prisma migrations on production Supabase. Smoke test all endpoints on production environment with real admin credentials.'},
-        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'Test full auth flow end-to-end: guest → browse shop → add to cart → tap checkout → AuthPromptModal → register with phone (matches imported tower) → towers auto-linked → redirect to checkout → guest cart merged. Fix any bugs.'},
+        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'Sandbox E2E in Expo Go: login → cart → CheckoutStepper → WebView Unified Checkout with Paymob TEST card + wallet → webhook updates order → admin Payment Transactions shows txn → fail path + retry-payment (new checkoutUrl). Confirm BNPL only if PAYMOB_BNPL_INTEGRATION_ID is set. Fix bugs. Short handoff note in user-app/docs (WebView + checkoutUrl; never ship secret key; native SDK deferred).'},
         Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'Deploy admin dashboard to PRODUCTION (Vercel or GCP). Production smoke test: login → dashboard → all 11 admin pages load correctly with real data. Write PROJECT_MEMORY.md update.'},
         Salma:   {c:'c-ux',     tag:'Design',   text:'Design QA W8: review WarrantyScreen + WarrantyTopUpScreen + WarrantyTopUpStatusScreen (user side) vs Figma. Verify in-warranty vs out-of-warranty badge visual states, approved extension date display.'},
         Hanaa:   {c:'c-ux',     tag:'Design',   text:'Design QA W8: review SparePartDetailScreen + SparePartsListScreen (user side) vs Figma. Verify admin decision display (approved/rejected/converted_to_order) matches design.'},
@@ -517,47 +518,47 @@ const WEEKS = [
     deliverables:[
       'Paymob Intentions API live — POST /v1/intention/ over HTTPS (axios) + HMAC-SHA512 webhook verified + MCP connected in Cursor',
       'Admin: Orders + Payment Transactions (replace Evidence) + Partners complete',
-      'User App: Onboarding + Registration + Login + Guest cart merge flow working',
+      'User App auth already shipped (prior W5) — replaced by: Expo Go + Unified Checkout WebView (checkoutUrl) card/wallet sandbox E2E; poll payment-status as SoT',
       'Backend + Admin Dashboard deployed to PRODUCTION',
       'Notification triggers: payment_succeeded/payment_failed webhook events wired',
       'Paymob MCP connected in Cursor Pro (https://mcp.paymob.com/mcp) — team can debug transactions without leaving editor',
     ]
   },
   {
-    n:6, label:'Week 6 — Admin Service Workflows · User App Checkout + Account', dates:'Sun 16 Aug – Thu 20 Aug', theme:'Maintenance · Complaints · Warranty · Spare Parts · Audit · Notifications',
+    n:6, label:'Week 6 — Admin Service Workflows · User App Account + Orders', dates:'Sun 16 Aug – Thu 20 Aug', theme:'Maintenance · Complaints · Warranty · Spare Parts · Audit · Notifications · Account/Orders (Paymob checkout shipped in W5)',
     milestone:'M6 — Service Workflows + Commerce complete · Thu 20 Aug',
     days:[
       { label:'Sun 16', cols:{
         Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Maintenance: POST /admin/maintenance/slots (date, start_time, end_time, city, coverage_area, capacity, assigned_personnel), PATCH /admin/maintenance/slots/:id, GET /admin/maintenance/bookings (filter by status/city/date), PATCH /admin/maintenance/bookings/:id/status. GET /care/maintenance/slots (public — tower owner, filter by tower city). POST/PATCH/CANCEL booking endpoints.'},
-        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'features/checkout: CheckoutStepper 3 steps: (1) Cart summary + edit items, (2) Contact + delivery info + payment method selector (card / wallet / bnpl), (3) Paymob launch — POST /orders/checkout → { clientSecret, publicKey, checkoutUrl }. Prefer Unified Checkout WebView with checkoutUrl (Expo Go OK); optional native RN SDK with clientSecret + publicKey (needs expo prebuild + Android dataBinding config plugin + EAS dev-client). Webhook owns order status. CheckoutSuccessPage (poll GET /orders/:id/payment-status) + CheckoutFailedPage (retry CTA).'},
+        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'Paymob checkout already shipped in W5 (Expo Go + Unified Checkout WebView via checkoutUrl) — do not rebuild CheckoutStepper. features/account: AccountProfilePage — view + edit (name, phone, email, country, city, address, language preference). RTK authSlice profile update on save. Polish CheckoutSuccess/Failed edge cases only if W5 handoff left gaps.'},
         Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'features/maintenance: MaintenancePage — 2 tabs: (1) Slots tab (create slot form + slots DataTable with status badge, capacity bar), (2) Bookings tab (booking queue, status update actions). MaintenanceCalendar component: week view, slot capacity indicators.'},
-        Salma:   {c:'c-ux',     tag:'Design',   text:'Design support W6: review CheckoutStepper 3-step UI vs Figma (cart summary / payment method selector / Paymob checkout launch). Update Figma checkout screens to reflect Paymob SDK flow replacing evidence upload step. Flag layout issues to Amr.'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'Design support W6: review W5 CheckoutStepper + Paymob WebView result screens vs Figma (cart summary / payment method / Unified Checkout WebView / success-fail). Flag layout issues to Amr. Update Figma if any W5 deviations.'},
         Hanaa:   {c:'c-ux',     tag:'Design',   text:'Design support W6: review Maintenance slot picker + BookMaintenanceScreen built by Amr vs Figma spec. Verify slot capacity indicator display and RTL layout.'},
       }},
       { label:'Mon 17', cols:{
         Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Complaints: GET /admin/complaints (filter: status, category, assigned_admin_id), PATCH .../assign (assign to admin user), POST .../resolve (resolution_notes required), POST .../reject (rejection_reason required), POST .../close. POST /care/complaints, GET /care/complaints (user own), POST /care/complaints/:id/attachments.'},
-        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'CheckoutSuccessPage (order number, estimated next steps). features/account: AccountProfilePage — view + edit (name, phone, email, country, city, address, language preference). RTK authSlice profile update on save.'},
+        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'features/account: OrdersListPage (user orders with payment status badges: pending/succeeded/failed, paginated via GET /orders). Start OrderDetailPage scaffold (items, totals, contact).'},
         Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'features/complaints: ComplaintsPage — ComplaintWorkflowPanel: queue list (filter by status/category/assigned), assign dropdown (admin users list), 6-state status stepper, notes textarea (required on resolve/reject), complaint_attachments viewer.'},
         Salma:   {c:'c-ux',     tag:'Design',   text:'Design support W6: review AccountProfilePage + CheckoutSuccessPage vs Figma. Verify all form field states (focus, error, disabled) match design.'},
         Hanaa:   {c:'c-ux',     tag:'Design',   text:'Design support W6: review ComplaintsWorkflowPanel 6-state stepper in admin vs Figma. Verify all state transitions visually correct and RTL-safe.'},
       }},
       { label:'Tue 18', cols:{
         Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Warranty: GET /admin/warranty/topup-requests, POST .../approve (requires approved_extension_until date), POST .../reject (reason required). Spare Parts: GET /admin/spare-part-requests, POST .../approve, POST .../reject, POST .../convert-to-order (creates order from request items).'},
-        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'features/account: OrdersListPage (user orders with payment status badges: pending/succeeded/failed, paginated). OrderDetailPage (items, totals, contact info, Paymob payment status badge, transaction ID). If payment_failed: "Retry Payment" button → re-open Paymob SDK. Order cancel request button.'},
+        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'OrderDetailPage complete (GET /orders/:id): items, totals, contact, Paymob payment status badge, transaction ID. If payment_failed: Retry Payment → POST /orders/:id/retry-payment → open WebView with new checkoutUrl (Expo Go OK). Order cancel request button.'},
         Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'features/warranty: WarrantyTopUpPage — request queue, tower preview (model/purchase_date/warranty_end), approve → date picker (approved_extension_until), reject → reason modal. features/spare-parts: SparePartsPage — request queue, tower + compatible parts info, 3 actions: approve / reject / convert-to-order. Payment transactions page polish: refund modal with Paymob refund reason field + amount confirmation.'},
         Salma:   {c:'c-ux',     tag:'Design',   text:'Design support W6: review OrdersListPage + OrderDetailPage (user side) vs Figma. Check payment status screen — all 3 Paymob states (payment_pending/payment_succeeded/payment_failed) match design. Verify retry payment CTA visible on failed state.'},
         Hanaa:   {c:'c-ux',     tag:'Design',   text:'Design support W6: review WarrantyTopUpPage + SparePartsPage (admin) vs Figma. Verify approve modal date picker and reject modal reason field designs.'},
       }},
       { label:'Wed 19', cols:{
         Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Wire AuditService.log() to ALL critical admin write operations: imports, tower changes (location/status/link/unlink), Paymob webhook-triggered order status updates, admin refund actions, complaint lifecycle, warranty decisions, spare parts decisions, CMS publish/archive, partner changes. Every write op gets an audit_logs row.'},
-        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'features/account: OrderDetailPage — show Paymob payment status badge (payment_pending/payment_succeeded/payment_failed). If payment_failed: show "Retry Payment" button → re-open Paymob SDK with same client_secret or create new intention. Order cancel request. features/notifications: NotificationsScreen (list, mark as read, unread badge on Profile tab).'},
+        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'OrderDetailPage polish + cancel request. features/notifications: NotificationsScreen (list, mark as read, unread badge on Profile tab).'},
         Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'features/notifications: Admin NotificationsPage (list by type, mark read, mark all read). features/audit-logs: AuditLogsPage — AuditLogTimeline (filter by actor/entity/action/date range, old_values → new_values diff view per row).'},
         Salma:   {c:'c-ux',     tag:'Design',   text:'Design support W6: review NotificationsScreen (user + admin) vs Figma. Verify unread badge, mark-as-read interaction, and RTL notification list layout.'},
         Hanaa:   {c:'c-ux',     tag:'Design',   text:'Design support W6: review AuditLogTimeline vs Figma. Verify old→new diff view presentation and timeline visual design. Deliver final design QA report for W6 screens.'},
       }},
       { label:'Thu 20', cols:{
         Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Wire NotificationService to ALL remaining Gate 4.4 trigger events: maintenance booking created/rescheduled/cancelled (user + admin), complaint submitted/status changed, warranty top-up submitted/approved/rejected, spare parts request submitted, tower location changed (admin alert), import batch completed.'},
-        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'Navigation guards: AuthRoute (requires login → redirect to onboarding), TowerOwnerRoute (requires linked tower → show locked/empty state). FeatureLockedWrapper component (shows locked teaser instead of hard error). Test guard behavior for all 4 user states.'},
+        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'Navigation guards: AuthRoute (requires login → redirect to onboarding), TowerOwnerRoute (requires linked tower → show locked/empty state). FeatureLockedWrapper component (shows locked teaser instead of hard error). Test guard behavior for all 4 user states. Smoke-test W5 Paymob retry from OrderDetail via WebView in Expo Go.'},
         Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'Polish ALL service workflow pages: loading states, empty states, error toasts. RTL verified on Maintenance calendar + Complaints 6-state stepper + Warranty date picker + Spare Parts page. Arabic translations for all new strings.'},
         Salma:   {c:'c-ux',     tag:'Design',   text:'Design support W6: review navigation guard states — FeatureLockedWrapper, Auth prompt modal, empty state (no towers), locked care state — all 4 match Figma across Guest/No-Towers/Tower Owner states.'},
         Hanaa:   {c:'c-ux',     tag:'Design',   text:'Design support W6: final polish review — compile full design QA report for all W5–W6 screens. Prioritized bug list for Ahmed/Amr/Demerdash to address before W9 QA pass.'},
@@ -565,7 +566,7 @@ const WEEKS = [
     ],
     deliverables:[
       'Admin: Maintenance + Complaints + Warranty + Spare Parts + Notifications + Audit Logs complete',
-      'User App: Full Paymob checkout flow (card + wallet + BNPL via React Native SDK) + Account + Orders + Notifications + Navigation guards',
+      'User App: Account + Orders + Notifications + Navigation guards (Paymob Unified Checkout WebView already shipped in W5 — Expo Go)',
       'Notification system wired to all 16 trigger events (Gate 4.4)',
       'AuditService active on all critical write operations',
     ]
@@ -763,6 +764,54 @@ const WEEKS = [
       '⭐ PHASE 1 FULLY COMPLETE — Thu 17 Sep 2026',
     ]
   },
+  {
+    n:11, label:'Week 11 — Selva Assistant (simple grounded chat)', dates:'Sun 20 Sep – Thu 24 Sep', theme:'Epic 15 pull-forward · CMS assistant_source knowledge · OpenAI · Expo chat (no tower mode / no RAG)',
+    milestone:'M11 — Selva Assistant live (grounded chat) · Thu 24 Sep',
+    days:[
+      { label:'Sun 20', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Prisma Group 13: assistant_sessions + assistant_messages + enums (MessageSender, session status). Zod env OPENAI_API_KEY + model name. Feature folder scaffold (services/controllers/routes). Knowledge = published cms_content where content_type = assistant_source (ADJ-02 — no separate knowledge table).'},
+        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'Unlock homepage Assistant entry + floating FAB; chat screen scaffold (user bubbles right, assistant left, input bar, typing placeholder). Guest tap → AuthPromptModal (no free LLM for guests). Stay on Expo — no Dev Client required for chat.'},
+        Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'CMS: ensure create/edit/list filters for content_type = assistant_source; document client knowledge pack format (title + body + tags) for ingest. Confirm published-only rows will feed the assistant.'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'QA chat bubble RTL (user right / assistant left in LTR; mirror correctly in AR). Flag spacing/typing-indicator issues vs Figma.'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'Confirm W4 Selva Assistant Figma for simple chat this week: drop tower selector / full tower-specific mode (deferred). Guest teaser + logged-in general chat only.'},
+      }},
+      { label:'Mon 21', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'APIs: create/list session; POST /assistant/sessions/:id/messages — persist user message → load published assistant_source bodies into prompt context → OpenAI Chat Completions → store assistant reply. Mount assistant routes with dedicated rate limiter.'},
+        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'RTK Query: create session, list messages, send message. Show typing while request in flight; persist session id; scroll list after reply. Wire FAB → chat for authenticated users only.'},
+        Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'Seed/import sample assistant_source rows from client draft (or placeholder knowledge pack). Arabic i18n strings for CMS type label assistant_source.'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'Design support: empty chat state, error toast, locked guest teaser vs Figma.'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'Design support: review FAB + chat open animation / header vs Figma; hand Amr any missing empty-state assets.'},
+      }},
+      { label:'Tue 22', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Prompt rules: answer only from provided knowledge; refuse off-topic; max tokens; never expose system prompt or raw CMS dump. Unit tests for context builder + refuse path.'},
+        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'Bubble polish, auto scroll-to-bottom, retry on fail, offline/error copy (i18n en+ar).'},
+        Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'Gate CMS write for assistant_source with assistant_content RBAC module (already in seed list). Verify Super Admin / Manager Admin / Admin permission behavior.'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'Design QA full chat flow EN + AR (guest teaser → login → send → reply → refuse state).'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'Design QA: typing indicator + long-message bubble wrap + input focus states vs Figma.'},
+      }},
+      { label:'Wed 23', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Logging for OpenAI/token errors; harden rate limit; smoke Postman/curl against staging (grounded answer + off-topic refuse).'},
+        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'E2E: login → open assistant → ask fact from sample pack → grounded reply; ask off-topic → safe refuse. Fix bugs.'},
+        Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'Admin walkthrough: publish new assistant_source → next mobile message reflects new knowledge. Empty/loading states on CMS list.'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'Final visual polish notes for Amr (spacing, FAB safe-area, keyboard overlap).'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'Final visual polish notes; confirm no tower-dropdown leaked into build.'},
+      }},
+      { label:'Thu 24', cols:{
+        Ahmed:   {c:'c-ahmed',  tag:'Backend',  text:'Docs: OPENAI_API_KEY + model env, knowledge publish flow (CMS assistant_source), known limits (no tower mode / no RAG / guests locked).'},
+        Amr:     {c:'c-amr-mob',tag:'Mobile',   text:'Handoff note in user-app/docs (assistant screens + RTK endpoints). Regression: FAB + AuthPrompt guest gate + chat happy path.'},
+        Demerdash:{c:'c-dem-ad',tag:'Admin',    text:'Live demo to tech lead with client sample Q&A (publish source → ask on mobile → correct answer).'},
+        Salma:   {c:'c-ux',     tag:'Design',   text:'Archive assistant screens in Figma handoff set for W11.'},
+        Hanaa:   {c:'c-ux',     tag:'Design',   text:'Archive assistant Figma (simple chat variant) with note: tower-specific mode deferred post-W11.'},
+      }},
+    ],
+    deliverables:[
+      'Schema Group 13 + assistant APIs live; OpenAI grounded on published CMS assistant_source',
+      'User App: simple chat (guest locked via AuthPrompt, logged-in chat) on Expo',
+      'Admin: publish/manage assistant knowledge via CMS + assistant_content RBAC',
+      'Sandbox E2E with client-provided or sample knowledge pack (grounded answer + off-topic refuse)',
+      'M11 — Selva Assistant live (grounded chat) · Thu 24 Sep 2026',
+    ]
+  },
 ];
 
 const MILESTONES = [
@@ -776,6 +825,7 @@ const MILESTONES = [
   {wk:'W8',label:'Care + EAS',date:'3 Sep'},
   {wk:'W9',label:'App Store',date:'10 Sep'},
   {wk:'W10',label:'COMPLETE',date:'17 Sep'},
+  {wk:'W11',label:'Assistant',date:'24 Sep'},
 ];
 
 const DAY_HEADERS = {
@@ -863,14 +913,14 @@ function showWeeks(wk, btn) {
   const sections = document.querySelectorAll('.week-section');
   if (wk === 'all') {
     sections.forEach(s => s.style.display = 'block');
-    document.getElementById('progressLabel').textContent = 'Showing: All 10 weeks';
+    document.getElementById('progressLabel').textContent = 'Showing: All 11 weeks';
     document.getElementById('progressFill').style.width = '100%';
   } else {
     sections.forEach(s => {
       s.style.display = (parseInt(s.dataset.week) === wk) ? 'block' : 'none';
     });
-    const pct = Math.round((wk/10)*100);
-    document.getElementById('progressLabel').textContent = `Week ${wk} of 10 — ${pct}% through Phase 1`;
+    const pct = Math.round((wk/11)*100);
+    document.getElementById('progressLabel').textContent = `Week ${wk} of 11 — ${pct}% through schedule`;
     document.getElementById('progressFill').style.width = pct + '%';
   }
   window.scrollTo({top: document.getElementById('weeksContainer').offsetTop - 20, behavior: 'smooth'});
