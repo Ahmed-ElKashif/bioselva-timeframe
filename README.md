@@ -37,12 +37,14 @@ start index.html
 3. Products + CMS
 4. Tower Import
 5. Orders + Paymob Mobile (Expo Go + Unified Checkout WebView)
-6. Services (Account + Orders; Paymob checkout in W5)
-7. Admin DONE
-8. Care + Builds
-9. QA + Submission
+6. Care APIs + Egypt delivery (Account + Orders UI; Paymob checkout in W5)
+7. RBAC backend DONE · Role Manager/Settings UI · Egypt checkout · Care · FCM open
+8. Care deep + EAS preview (warranty display only — no top-up)
+9. QA + Store submission
 10. UAT + Launch (Phase 1 complete)
 11. Selva Assistant (simple grounded chat — CMS `assistant_source` + OpenAI)
+
+**SoT for W6+ tasks:** `@backend/docs/agent`, `@admin-dashboard/docs/agent`, `@user-app/docs/agent` (updated 2026-08-24).
 
 ## What’s in the page
 
